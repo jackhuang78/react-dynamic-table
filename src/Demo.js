@@ -7,7 +7,7 @@ var Input = ReactBootstrap.Input;
 var DynamicTable = require('./DynamicTable');
 var cookie = require('react-cookie');
 
-var sampleData = require('./sampleData.json');
+var sampleData = require('../public/demoData.json');
 
 var Demo = React.createClass({
 	render: function() {
@@ -16,7 +16,11 @@ var Demo = React.createClass({
 				<Panel>
 					<PageHeader>DynamicTable Demo</PageHeader>
 					<Button bsStyle='danger' onClick={this.resetTable}>Reset Table</Button>
-					<DynamicTable ref='table' onChange={this.save} />
+					<DynamicTable ref='table' onChange={this.save} 
+						onSelectRow={this.onSelectRow}
+						onAddRow={this.onAddRow}
+						onDeleteRow={this.onDeleteRow}
+					/>
 				</Panel>
 			</div>
 		);

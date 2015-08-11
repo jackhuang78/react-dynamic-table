@@ -3,6 +3,9 @@ var ReactBootstrap = require('react-bootstrap');
 var Table = ReactBootstrap.Table;
 var Input = ReactBootstrap.Input;
 var Button = ReactBootstrap.Button;
+var Modal = ReactBootstrap.Modal;
+
+var Case = require('case');
 
 var DynamicTable = React.createClass({
 
@@ -10,26 +13,26 @@ var DynamicTable = React.createClass({
 		return {
 			columns: [],
 			data: [],
-			newItem: {}
+			newItem: {},
+			showConfirmDelete: false
 		};
 	},
 
 	render: function() {
-		console.log('render');
+		console.log('render', this.state);
 
 		if(!this.state) {
 			return (<div>No Data</div>);
 		}
 
 		var header = this.state.columns.map(function(column) {
-			return (<th>{column.name}</th>);
+			return (<th>{Case.title(column.name)}</th>);
 		}.bind(this));
-		header.push(<th>Operation</th>);
+		header.unshift(<th></th>);
+		header.push(<th></th>);
 
 		var cellFor = function(item, idx, column) {
 			var value = item[column.name];
-
-
 
 			switch(column.type) {
 				case 'Number':
@@ -68,30 +71,58 @@ var DynamicTable = React.createClass({
 			var row = this.state.columns.map(function(column) {
 				return cellFor(item, idx, column);
 			}.bind(this));
-			row.push(<td><Button data-idx={idx} bsSize='xsmall' bsStyle='danger' onClick={this.onClickDelete}>X</Button></td>);
-			return (<tr>{row}</tr>);
+			
+			var checked = (idx === this.state.selectedRow);
+			//console.log('ck', checked);
+			row.unshift(<td><Input data-idx={idx} type='radio' name='select' checked={checked} wrapperClassName='col-xs-offset-2 col-xs-10' standalone/></td>);
+			row.push(<td><Button data-idx={idx} bsSize='xsmall' bsStyle='danger' onClick={this.onClickDelete}>x</Button></td>);
+			return (<tr data-idx={idx} onClick={this.listener(idx, this.onClickRow)}>{row}</tr>);
 		}.bind(this));
 
 		var newItemRow = this.state.columns.map(function(column) {
 			return cellFor(this.state.newItem, null, column);
 		}.bind(this));
+		newItemRow.unshift(<td></td>);
 		newItemRow.push(<td><Button bsSize='xsmall' bsStyle='success' onClick={this.onClickAdd}>+</Button></td>);
 		rows.push(<tr>{newItemRow}</tr>);
 
 
 		return (
-			
-			<Table striped hover>
-				<thead>
-					<tr>
-						{header}
-					</tr>
-				</thead>
-				<tbody>
-					{rows}
-				</tbody>
-			</Table>
+			<div>
+				<Table striped hover>
+					<thead>
+						<tr>
+							{header}
+						</tr>
+					</thead>
+					<tbody>
+						{rows}
+					</tbody>
+				</Table>
+				<Modal
+					show={this.state.showConfirmDelete}
+					onHide={this.onCancelDelete}
+					container={this}
+					aria-labelledby='contained-modal-title'>
+					<Modal.Header closeButton>
+						<Modal.Title>Delete Confirmation</Modal.Title>
+					</Modal.Header>
+					<Modal.Body>
+						Are you sure about deleting item {this.state.itemToDelete}?
+					</Modal.Body>
+					<Modal.Footer>
+						<Button bsStyle='danger' onClick={this.onConfirmDelete}>Confirm</Button>
+						<Button onClick={this.onCancelDelete}>Cancel</Button>
+					</Modal.Footer>
+				</Modal>
+			</div>
 		);
+	},
+
+	listener: function(idx, f) {
+		return function(event) {
+			f(event, idx);
+		};
 	},
 
 	onInputChange: function(event) {
@@ -132,15 +163,51 @@ var DynamicTable = React.createClass({
 	},
 
 	onClickDelete: function(event) {
-		console.log('delete item', event.target.dataset.idx);
+		this.setState({
+			showConfirmDelete: true,
+			itemToDelete: event.target.dataset.idx
+		});
+	},
 
-		this.state.data.splice(event.target.dataset.idx, 1);
+	onConfirmDelete: function(event) {
+		console.log('delete item', this.state.itemToDelete);
+
+		this.state.data.splice(this.state.itemToDelete, 1);
 		this.setState({
 			data: this.state.data
 		});
 		this.props.onChange(this.state);
-	}
+		this.onCancelDelete(event);
+	},
 
+	onCancelDelete: function(event) {
+		this.setState({
+			showConfirmDelete: false
+		});
+	},
+
+	onSelectRow: function(event) {
+		console.log('select row', event.target.dataset.idx);
+		this.setState({
+			selectedRow: event.target.dataset.idx
+		});
+	},
+
+	closeDeleteConfirm: function(event) {
+		this.setState({
+			showConfirmDelete: false
+		});
+	},	
+
+	onClickRow: function(event, idx) {
+		//console.log(event.target.type, idx);
+		//console.log('row clicked', event.target.type, event.target);
+		var tag = event.target.tagName;
+		if(tag === 'TD' || tag === 'DIV' || event.target.type === 'radio')
+		this.setState({
+				selectedRow: idx
+			});
+	},
 
 });
 

@@ -12,6 +12,7 @@
   "dependencies": {
     "bootstrap": "^3.3.5",
     "bootstrap-datepicker": "^1.4.0",
+    "case": "^1.2.1",
     "jquery": "^2.1.4",
     "js-cookie": "^2.0.3",
     "lodash": "^3.10.0",
