@@ -1,0 +1,32 @@
+{
+	"columns": [{
+		"name": "id",
+		"type": "Number",
+	}, {
+		"name": "name",
+		"type": "String"
+	}, {
+		"name": "dob",
+		"type": "String"
+	}, {
+		"name": "age",
+		"type": "Number"
+	}, {
+		"name": "working",
+		"type": "Boolean"
+	}],
+
+	"data": [{
+		"id": 1,
+		"name": "Jack Huang",
+		"dob": "12/17/1989",
+		"age": 25,
+		"working": true
+	}, {
+		"id": 2,
+		"name": "Jeff Huang",
+		"dob": "9/13/1991",
+		"age": 23,
+		"working": true
+	}]
+}
