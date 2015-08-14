@@ -14,12 +14,20 @@ var DynamicTable = React.createClass({
 			columns: [],
 			data: [],
 			newItem: {},
-			showConfirmDelete: false
+			showConfirmDelete: false,
+			selectedRow: undefined
 		};
+	},
+
+	componentDidMount: function() {
+		console.log(this.state);
 	},
 
 	render: function() {
 		console.log('render', this.state);
+		// if(this.state.selectedRow === undefined && this.state.data.length !== 0)
+		// 	this.state.selectedRow = this.state.data.length;
+		// console.log('render2', this.state);
 
 		if(!this.state) {
 			return (<div>No Data</div>);
@@ -28,68 +36,82 @@ var DynamicTable = React.createClass({
 		var header = this.state.columns.map(function(column) {
 			return (<th>{Case.title(column.name)}</th>);
 		}.bind(this));
-		header.unshift(<th></th>);
+		//header.unshift(<th></th>);
 		header.push(<th></th>);
 
-		var cellFor = function(item, idx, column) {
+		var cellFor = function(item, idx, column, selected) {
 			var value = item[column.name];
+			console.log(item, idx, column, selected);
 
-			switch(column.type) {
-				case 'Number':
-					return (<td><Input 
-						standalone
-						type='number' 
-						value={value} 
-						onChange={this.onInputChange} 
-						data-idx={idx} 
-						data-col={column.name} /></td>);
+			if(selected) {
 
-				case 'Boolean':
-					return (<td><Input
-						standalone
-						type='checkbox'
-						wrapperClassName='col-xs-offset-2 col-xs-10'
-						checked={value}
-						onChange={this.onInputChange} 
-						data-idx={idx} 
-						data-col={column.name} />	</td>);
+				switch(column.type) {
+					case 'Number':
+						return (<td><Input 
+							standalone
+							type='number' 
+							value={value} 
+							onChange={this.onInputChange} 
+							data-idx={idx} 
+							data-col={column.name} /></td>);
 
-				case 'String':
-					return (<td><Input 
-						standalone
-						type='text' 
-						value={value} 
-						onChange={this.onInputChange} 
-						data-idx={idx} 
-						data-col={column.name} /></td>);
-				default:
-					return (<td>{value}</td>);
+					case 'Boolean':
+						return (<td><Input
+							standalone
+							type='checkbox'
+							style={{'margin': 0}}
+							checked={value}
+							onChange={this.onInputChange} 
+							data-idx={idx} 
+							data-col={column.name} />	</td>);
+
+					case 'String':
+						return (<td><Input 
+							standalone
+							type='text' 
+							value={value} 
+							onChange={this.onInputChange} 
+							data-idx={idx} 
+							data-col={column.name} /></td>);
+					default:
+						return (<td>{value}</td>);
+				
+				}
+			} else {
+				switch(column.type) {
+					case 'Boolean':
+						return (<td>{value ? '√' : ''}</td>);
+					default:
+						return (<td>{value}</td>);
+				}
+
+				
 			}
 		}.bind(this);
 
 		var rows = this.state.data.map(function(item, idx) {
 			var row = this.state.columns.map(function(column) {
-				return cellFor(item, idx, column);
+				return cellFor(item, idx, column, this.state.selectedRow === idx);
 			}.bind(this));
 			
 			var checked = (idx === this.state.selectedRow);
 			//console.log('ck', checked);
-			row.unshift(<td><Input data-idx={idx} type='radio' name='select' checked={checked} wrapperClassName='col-xs-offset-2 col-xs-10' standalone/></td>);
+			//row.unshift(<td><Input data-idx={idx} type='radio' name='select' checked={checked} style={{margin: 0}} standalone /></td>);
 			row.push(<td><Button data-idx={idx} bsSize='xsmall' bsStyle='danger' onClick={this.onClickDelete}>x</Button></td>);
 			return (<tr data-idx={idx} onClick={this.listener(idx, this.onClickRow)}>{row}</tr>);
 		}.bind(this));
 
 		var newItemRow = this.state.columns.map(function(column) {
-			return cellFor(this.state.newItem, null, column);
+			return cellFor(this.state.newItem, null, column, this.state.selectedRow === this.state.data.length);
 		}.bind(this));
-		newItemRow.unshift(<td></td>);
+		//newItemRow.unshift(<td></td>);
 		newItemRow.push(<td><Button bsSize='xsmall' bsStyle='success' onClick={this.onClickAdd}>+</Button></td>);
-		rows.push(<tr>{newItemRow}</tr>);
+		rows.push(<tr className='warning' onClick={this.listener(this.state.data.length, this.onClickRow)}>{newItemRow}</tr>);
 
 
 		return (
 			<div>
-				<Table striped hover>
+				<Table striped condensed hover>
 					<thead>
 						<tr>
 							{header}
@@ -202,11 +224,12 @@ var DynamicTable = React.createClass({
 	onClickRow: function(event, idx) {
 		//console.log(event.target.type, idx);
 		//console.log('row clicked', event.target.type, event.target);
-		var tag = event.target.tagName;
-		if(tag === 'TD' || tag === 'DIV' || event.target.type === 'radio')
+		//var tag = event.target.tagName;
+		//if(tag === 'TD' || tag === 'DIV' || event.target.type === 'radio')
+		console.log('onClickRow', idx);
 		this.setState({
-				selectedRow: idx
-			});
+			selectedRow: idx
+		});
 	},
 
 });
