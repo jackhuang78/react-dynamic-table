@@ -19,13 +19,13 @@
 	"data": [{
 		"id": 1,
 		"name": "Adam Smith",
-		"dob": "06/16/1723",
+		"dateOfBirth": "06/16/1723",
 		"age": 292,
 		"alive": false
 	}, {
 		"id": 2,
 		"name": "Bill Gates",
-		"dob": "10/28/1955",
+		"dateOfBirth": "10/28/1955",
 		"age": 60,
 		"alive": true
 	}]
