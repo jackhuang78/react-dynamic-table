@@ -27,6 +27,7 @@ var Demo = React.createClass({displayName: "Demo",
 		);
 	},
 
+
 	componentDidMount: function() {
 		this.load();
 	},
