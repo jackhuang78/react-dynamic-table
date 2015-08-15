@@ -20,18 +20,13 @@
   "license": "ISC",
   "dependencies": {
     "bootstrap": "^3.3.5",
-    "bootstrap-datepicker": "^1.4.0",
     "case": "^1.2.1",
     "jquery": "^2.1.4",
-    "js-cookie": "^2.0.3",
     "lodash": "^3.10.0",
     "moment": "^2.10.3",
     "react": "^0.13.3",
     "react-bootstrap": "^0.23.7",
     "react-cookie": "^0.2.5",
-    "react-datepicker": "^0.10.0",
-    "react-number-editor": "^2.2.0",
-    "reactify": "^1.1.1",
     "uuid": "^2.0.1"
   },
   "devDependencies": {
