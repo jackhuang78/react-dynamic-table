@@ -9,11 +9,12 @@ var cookie = require('react-cookie');
 
 var sampleData = require('../public/demoData.json');
 
+
 var Demo = React.createClass({
 	render: function() {
 		return (
 			<div>
-				<Panel>
+				<Panel style={{margin: 30}}>
 					<PageHeader>DynamicTable Demo</PageHeader>
 					<Button bsStyle='danger' onClick={this.resetTable}>Reset Table</Button>
 					<DynamicTable ref='table' onChange={this.save} 

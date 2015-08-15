@@ -1,13 +1,23 @@
 {
-  "name": "react-bootstrap-table",
+  "name": "react-dynamic-table",
   "version": "1.0.0",
-  "description": "",
-  "main": "app.js",
+  "description": "A React table to show and edit data dyanmically.",
+  "main": "src/DynamicTable.js",
   "scripts": {
-    "watch": "watchify main.js -o build/bundle.js -v -d",
+    "clean": "rm -rf build dist",
+    "jsx": "jsx src dist",
+    "browserify": "mkdir -p build && browserify -o build/bundle.js dist/main.js",
+    "uglify": "uglifyjs -v -o build/min.js build/bundle.js",
+    "jsdoc": "jsdoc -d doc/jsdoc dist",
+    "build": "npm-run-all clean jsx browserify",
+    "doc": "npm-run-all clean jsx jsdoc",
+    "watch:build": "watch \"npm run build\" src",
+    
+    "build2": "npm-run-all clean jsx browserify uglify",
+    "watch2": "watchify main.js -o build/bundle.js -v -d",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "Jack Huang",
+  "author": "Jack Huang <jack.huang78@gmail.com>",
   "license": "ISC",
   "dependencies": {
     "bootstrap": "^3.3.5",
@@ -33,5 +43,13 @@
   "jshintConfig": {
     "laxbreak": true,
     "eqnull": true
+  },
+  "devDependencies": {
+    "browserify": "^11.0.1",
+    "jsdoc": "^3.3.2",
+    "npm-run-all": "^1.2.6",
+    "react-tools": "^0.13.3",
+    "uglifyjs": "^2.4.10",
+    "watch": "^0.16.0"
   }
 }

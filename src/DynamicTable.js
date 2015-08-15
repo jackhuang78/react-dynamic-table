@@ -7,27 +7,26 @@ var Modal = ReactBootstrap.Modal;
 
 var Case = require('case');
 
-var DynamicTable = React.createClass({
+/**
+ * @class DynamicTable
+ */
+var DynamicTable = {
 
+	/**
+	 * get the initial state
+	 * @return {object} the initial state
+	 */
 	getInitialState: function() {
 		return {
 			columns: [],
 			data: [],
 			newItem: {},
-			showConfirmDelete: false,
-			selectedRow: undefined
+			showConfirmDelete: false
 		};
-	},
-
-	componentDidMount: function() {
-		console.log(this.state);
 	},
 
 	render: function() {
 		console.log('render', this.state);
-		// if(this.state.selectedRow === undefined && this.state.data.length !== 0)
-		// 	this.state.selectedRow = this.state.data.length;
-		// console.log('render2', this.state);
 
 		if(!this.state) {
 			return (<div>No Data</div>);
@@ -215,6 +214,7 @@ var DynamicTable = React.createClass({
 		});
 	},
 
+
 	closeDeleteConfirm: function(event) {
 		this.setState({
 			showConfirmDelete: false
@@ -232,6 +232,8 @@ var DynamicTable = React.createClass({
 		});
 	},
 
-});
+};
+
+DynamicTable = React.createClass(DynamicTable);
 
 module.exports = DynamicTable;

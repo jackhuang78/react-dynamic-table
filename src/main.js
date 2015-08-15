@@ -1,5 +1,5 @@
 var React = require('react');
-var Demo = require('./src/Demo');
+var Demo = require('./Demo');
 
 React.render(<Demo/>, content);
 
