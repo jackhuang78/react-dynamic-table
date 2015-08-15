@@ -8,7 +8,7 @@
     "jsx": "jsx src dist",
     "browserify": "mkdir -p build && browserify -o build/bundle.js dist/main.js",
     "uglify": "uglifyjs -v -o build/min.js build/bundle.js",
-    "jsdoc": "jsdoc -d doc/jsdoc dist",
+    "jsdoc": "rm -rf doc && jsdoc -d doc/jsdoc dist",
     "build": "npm-run-all clean jsx browserify",
     "doc": "npm-run-all clean jsx jsdoc",
     "watch:build": "watch \"npm run build\" src",
