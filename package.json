@@ -1,6 +1,6 @@
 {
   "name": "react-dynamic-table",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A React table to show and edit data dyanmically.",
   "main": "dist/DynamicTable.js",
   "scripts": {
@@ -12,7 +12,6 @@
     "build": "npm-run-all clean jsx browserify",
     "doc": "npm-run-all clean jsx jsdoc",
     "watch:build": "watch \"npm run build\" src",
-    
     "build2": "npm-run-all clean jsx browserify uglify",
     "watch2": "watchify main.js -o build/bundle.js -v -d",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -47,5 +46,4 @@
     "laxbreak": true,
     "eqnull": true
   }
-  
 }
