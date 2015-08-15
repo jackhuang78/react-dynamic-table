@@ -6,7 +6,7 @@
 		"name": "name",
 		"type": "String"
 	}, {
-		"name": "dob",
+		"name": "dateOfBirth",
 		"type": "String"
 	}, {
 		"name": "age",
