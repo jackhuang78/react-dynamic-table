@@ -2,7 +2,7 @@
   "name": "react-dynamic-table",
   "version": "1.0.0",
   "description": "A React table to show and edit data dyanmically.",
-  "main": "src/DynamicTable.js",
+  "main": "dist/DynamicTable.js",
   "scripts": {
     "clean": "rm -rf build dist",
     "jsx": "jsx src dist",
@@ -35,15 +35,6 @@
     "reactify": "^1.1.1",
     "uuid": "^2.0.1"
   },
-  "browserify": {
-    "transform": [
-      "reactify"
-    ]
-  },
-  "jshintConfig": {
-    "laxbreak": true,
-    "eqnull": true
-  },
   "devDependencies": {
     "browserify": "^11.0.1",
     "jsdoc": "^3.3.2",
@@ -51,5 +42,10 @@
     "react-tools": "^0.13.3",
     "uglifyjs": "^2.4.10",
     "watch": "^0.16.0"
+  },
+  "jshintConfig": {
+    "laxbreak": true,
+    "eqnull": true
   }
+  
 }
