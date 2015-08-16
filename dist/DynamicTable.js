@@ -38,15 +38,26 @@ var DynamicTable = {
 		//header.unshift(<th></th>);
 		header.push(React.createElement("th", null));
 
+		//console.log('this.props.widths', this.props.widths);
+
 		var cellFor = function(item, idx, column, selected) {
 			var value = item[column.name];
-			console.log(item, idx, column, selected);
+			//console.log(item, idx, column, selected);
 
+			var tdStyle = {};
+			if(this.props.widths) {
+				tdStyle.width = this.props.widths[column.name];
+				//console.log(tdStyle);
+			}
+
+			//var elem = {};
 			if(selected) {
+
 
 				switch(column.type) {
 					case 'Number':
-						return (React.createElement("td", null, React.createElement(Input, {
+
+						return (React.createElement("td", {style: tdStyle}, React.createElement(Input, {
 							standalone: true, 
 							type: "number", 
 							value: value, 
@@ -55,33 +66,36 @@ var DynamicTable = {
 							"data-col": column.name})));
 
 					case 'Boolean':
-						return (React.createElement("td", null, React.createElement(Input, {
+						return (React.createElement("td", {style: tdStyle}, React.createElement(Input, {
 							standalone: true, 
 							type: "checkbox", 
-							style: {'margin': 0}, 
+							style: {'margin': 0, display: 'table-cell'}, 
 							checked: value, 
 							onChange: this.onInputChange, 
 							"data-idx": idx, 
 							"data-col": column.name}), " "));
 
 					case 'String':
-						return (React.createElement("td", null, React.createElement(Input, {
+						return (React.createElement("td", {style: tdStyle}, React.createElement(Input, {
 							standalone: true, 
 							type: "text", 
 							value: value, 
+							style: {
+								display: 'table-cell'
+							}, 
 							onChange: this.onInputChange, 
 							"data-idx": idx, 
 							"data-col": column.name})));
 					default:
-						return (React.createElement("td", null, value));
+						return (React.createElement("td", {style: tdStyle}, value));
 				
 				}
 			} else {
 				switch(column.type) {
 					case 'Boolean':
-						return (React.createElement("td", null, value ? '√' : ''));
+						return (React.createElement("td", {style: tdStyle}, value ? '√' : ''));
 					default:
-						return (React.createElement("td", null, value));
+						return (React.createElement("td", {style: tdStyle}, value));
 				}
 
 				
@@ -107,12 +121,12 @@ var DynamicTable = {
 		newItemRow.push(React.createElement("td", null, React.createElement(Button, {bsSize: "xsmall", bsStyle: "success", onClick: this.onClickAdd}, "+")));
 		rows.push(React.createElement("tr", {className: "warning", onClick: this.listener(this.state.data.length, this.onClickRow)}, newItemRow));
 
-
+		console.log('before rendor return');
 		return (
 			React.createElement("div", null, 
 				React.createElement(Table, {striped: true, condensed: true, hover: true}, 
 					React.createElement("thead", null, 
-						React.createElement("tr", null, 
+						React.createElement("tr", {ref: "headerRow"}, 
 							header
 						)
 					), 
@@ -140,6 +154,21 @@ var DynamicTable = {
 		);
 	},
 
+	componentDidUpdate: function(prevProps, prevState) {
+
+		// get the column width to be use for the next render
+		// to avoid input messing up column widht
+		var ths = this.refs.headerRow.getDOMNode().children;
+		this.props.widths = {};
+		for(var i in ths) {
+			if(this.state.columns[i])
+				this.props.widths[this.state.columns[i].name] = ths[i].offsetWidth;
+			else
+				this[i] = '';
+		}
+		
+	},
+
 	listener: function(idx, f) {
 		return function(event) {
 			f(event, idx);
@@ -154,12 +183,11 @@ var DynamicTable = {
 			: this.state.newItem;
 
 
-
 		if(event.target.type === 'checkbox') {
-			console.log(event.target.checked);
+			//console.log(event.target.checked);
 			item[event.target.dataset.col] = event.target.checked;	
 		} else {
-			console.log(event.target.value);
+			//console.log(event.target.value);
 			item[event.target.dataset.col] = event.target.value;
 		}
 

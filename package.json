@@ -4,16 +4,13 @@
   "description": "A React table to show and edit data dyanmically.",
   "main": "dist/DynamicTable.js",
   "scripts": {
-    "clean": "rm -rf build dist",
-    "jsx": "jsx src dist",
-    "browserify": "mkdir -p build && browserify -o build/bundle.js dist/main.js",
-    "uglify": "uglifyjs -v -o build/min.js build/bundle.js",
-    "jsdoc": "rm -rf doc && jsdoc -d doc/jsdoc dist",
-    "build": "npm-run-all clean jsx browserify",
-    "doc": "npm-run-all clean jsx jsdoc",
-    "watch:build": "watch \"npm run build\" src",
-    "build2": "npm-run-all clean jsx browserify uglify",
-    "watch2": "watchify main.js -o build/bundle.js -v -d",
+    "clean": "rm -rf build dist doc",
+    "browserify": "mkdir -p build && browserify -t reactify -o build/bundle.js src/main.js",
+    "jsx": "mkdir -p dist && jsx src dist",
+    "jsdoc": "mkdir -p doc && jsdoc -d doc/jsdoc dist",
+    "dist": "npm-run-all clean jsx jsdoc",
+    "bundle": "npm-run-all browserify && echo \"DONE\"",
+    "watch:bundle": "watch \"npm run bundle\" src",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Jack Huang <jack.huang78@gmail.com>",
@@ -34,11 +31,21 @@
     "jsdoc": "^3.3.2",
     "npm-run-all": "^1.2.6",
     "react-tools": "^0.13.3",
+    "reactify": "^1.1.1",
     "uglifyjs": "^2.4.10",
     "watch": "^0.16.0"
   },
   "jshintConfig": {
     "laxbreak": true,
     "eqnull": true
+  },
+  "tmp": {
+    "uglify": "uglifyjs -v -o build/min.js build/bundle.js",
+    "browserify": "mkdir -p build && browserify -o build/bundle.js dist/main.js",
+    "build": "npm-run-all clean jsx browserify && echo \"done\"",
+    "doc": "npm-run-all clean jsx jsdoc",
+    "watch:build": "watch \"npm run build\" src",
+    "build2": "npm-run-all clean jsx browserify uglify",
+    "watch2": "watchify main.js -o build/bundle.js -v -d"
   }
 }

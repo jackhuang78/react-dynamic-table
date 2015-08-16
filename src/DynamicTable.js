@@ -38,15 +38,26 @@ var DynamicTable = {
 		//header.unshift(<th></th>);
 		header.push(<th></th>);
 
+		//console.log('this.props.widths', this.props.widths);
+
 		var cellFor = function(item, idx, column, selected) {
 			var value = item[column.name];
-			console.log(item, idx, column, selected);
+			//console.log(item, idx, column, selected);
 
+			var tdStyle = {};
+			if(this.props.widths) {
+				tdStyle.width = this.props.widths[column.name];
+				//console.log(tdStyle);
+			}
+
+			//var elem = {};
 			if(selected) {
+
 
 				switch(column.type) {
 					case 'Number':
-						return (<td><Input 
+
+						return (<td style={tdStyle}><Input 
 							standalone
 							type='number' 
 							value={value} 
@@ -55,33 +66,36 @@ var DynamicTable = {
 							data-col={column.name} /></td>);
 
 					case 'Boolean':
-						return (<td><Input
+						return (<td style={tdStyle}><Input
 							standalone
 							type='checkbox'
-							style={{'margin': 0}}
+							style={{'margin': 0, display: 'table-cell'}}
 							checked={value}
 							onChange={this.onInputChange} 
 							data-idx={idx} 
 							data-col={column.name} />	</td>);
 
 					case 'String':
-						return (<td><Input 
+						return (<td style={tdStyle}><Input 
 							standalone
 							type='text' 
 							value={value} 
+							style={{
+								display: 'table-cell'
+							}}
 							onChange={this.onInputChange} 
 							data-idx={idx} 
 							data-col={column.name} /></td>);
 					default:
-						return (<td>{value}</td>);
+						return (<td style={tdStyle}>{value}</td>);
 				
 				}
 			} else {
 				switch(column.type) {
 					case 'Boolean':
-						return (<td>{value ? '√' : ''}</td>);
+						return (<td style={tdStyle}>{value ? '√' : ''}</td>);
 					default:
-						return (<td>{value}</td>);
+						return (<td style={tdStyle}>{value}</td>);
 				}
 
 				
@@ -107,12 +121,12 @@ var DynamicTable = {
 		newItemRow.push(<td><Button bsSize='xsmall' bsStyle='success' onClick={this.onClickAdd}>+</Button></td>);
 		rows.push(<tr className='warning' onClick={this.listener(this.state.data.length, this.onClickRow)}>{newItemRow}</tr>);
 
-
+		console.log('before rendor return');
 		return (
 			<div>
 				<Table striped condensed hover>
 					<thead>
-						<tr>
+						<tr ref='headerRow'>
 							{header}
 						</tr>
 					</thead>
@@ -140,6 +154,21 @@ var DynamicTable = {
 		);
 	},
 
+	componentDidUpdate: function(prevProps, prevState) {
+
+		// get the column width to be use for the next render
+		// to avoid input messing up column widht
+		var ths = this.refs.headerRow.getDOMNode().children;
+		this.props.widths = {};
+		for(var i in ths) {
+			if(this.state.columns[i])
+				this.props.widths[this.state.columns[i].name] = ths[i].offsetWidth;
+			else
+				this[i] = '';
+		}
+		
+	},
+
 	listener: function(idx, f) {
 		return function(event) {
 			f(event, idx);
@@ -154,12 +183,11 @@ var DynamicTable = {
 			: this.state.newItem;
 
 
-
 		if(event.target.type === 'checkbox') {
-			console.log(event.target.checked);
+			//console.log(event.target.checked);
 			item[event.target.dataset.col] = event.target.checked;	
 		} else {
-			console.log(event.target.value);
+			//console.log(event.target.value);
 			item[event.target.dataset.col] = event.target.value;
 		}
 
