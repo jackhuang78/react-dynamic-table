@@ -4,13 +4,8 @@
   "description": "A React table to show and edit data dyanmically.",
   "main": "dist/DynamicTable.js",
   "scripts": {
-    "clean": "rm -rf build dist doc",
-    "browserify": "mkdir -p build && browserify -t reactify -o build/bundle.js src/main.js",
-    "jsx": "mkdir -p dist && jsx src dist",
-    "jsdoc": "mkdir -p doc && jsdoc -d doc/jsdoc dist",
-    "dist": "npm-run-all clean jsx jsdoc",
-    "bundle": "npm-run-all browserify && echo \"DONE\"",
-    "watch:bundle": "watch \"npm run bundle\" src",
+    "build": "mkdir -p build && watchify -v -t babelify -o build/bundle.js src/main.js",
+    "dist": "babel -d dist src && jsdoc -d doc/jsdoc dist",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Jack Huang <jack.huang78@gmail.com>",
@@ -24,28 +19,25 @@
     "react": "^0.13.3",
     "react-bootstrap": "^0.23.7",
     "react-cookie": "^0.2.5",
+    "react-notification-system": "^0.1.14",
+    "util": "^0.10.3",
     "uuid": "^2.0.1"
   },
   "devDependencies": {
+    "babel": "^5.8.21",
+    "babelify": "^6.2.0",
     "browserify": "^11.0.1",
     "jsdoc": "^3.3.2",
     "npm-run-all": "^1.2.6",
     "react-tools": "^0.13.3",
     "reactify": "^1.1.1",
     "uglifyjs": "^2.4.10",
-    "watch": "^0.16.0"
+    "watch": "^0.16.0",
+    "watchify": "^3.3.1"
   },
   "jshintConfig": {
     "laxbreak": true,
-    "eqnull": true
-  },
-  "tmp": {
-    "uglify": "uglifyjs -v -o build/min.js build/bundle.js",
-    "browserify": "mkdir -p build && browserify -o build/bundle.js dist/main.js",
-    "build": "npm-run-all clean jsx browserify && echo \"done\"",
-    "doc": "npm-run-all clean jsx jsdoc",
-    "watch:build": "watch \"npm run build\" src",
-    "build2": "npm-run-all clean jsx browserify uglify",
-    "watch2": "watchify main.js -o build/bundle.js -v -d"
+    "eqnull": true,
+    "esnext": true
   }
 }

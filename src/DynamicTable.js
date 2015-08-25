@@ -1,21 +1,43 @@
-var React = require('react');
+var React = require('react/addons');
 var ReactBootstrap = require('react-bootstrap');
 var Table = ReactBootstrap.Table;
 var Input = ReactBootstrap.Input;
 var Button = ReactBootstrap.Button;
 var Modal = ReactBootstrap.Modal;
+var Glyphicon = ReactBootstrap.Glyphicon;
+var ReactCSSTransitionGroup = React.addons.CSSTransitionGroup;
 
 var Case = require('case');
 
 /**
  * @class DynamicTable
+ * @property {array.<object>} state.data The data to display.
+ * @property {array.<object>} state.columns The columns to diplay and their info.
+ * @property {string} state.columns.name The column name.
+ * @property {string} state.columns.type One of String, Number, or Boolean.
+ * @property {string} state.columns.subtype One of Date.
+ * @property {DynamicTable#rowsAffected} props.onSelectRow Called when a row is selected.
+ * @property {DynamicTable#rowsAffected} props.onUpdateRow Called when a row is updated.
+ * @property {DynamicTable#rowsAffected} props.onAddRow Called when a row is added.
+ * @property {DynamicTable#rowsAffected} props.onDeleteRow Called when a row is deleted.
  */
 var DynamicTable = {
 
 	/**
-	 * get the initial state
-	 * @return {object} the initial state
+	 * @callback DynamicTable#rowsAffected
+	 * @param {number} index The index of the row affected.
+	 * @param {string} column The column of the row's field affected.
+	 * @param {number|string|boolean} value The changed value.
+	 * @param {object} item The old item.
+	 * @param {DynamicTable#valueUpdate} cb Callback to provide the value to update.
 	 */
+	
+	/**
+	 * @callback DynamicTable#valueUpdate
+	 * @param {number|string|boolean} value The value to update
+	 */
+	
+
 	getInitialState: function() {
 		return {
 			columns: [],
@@ -25,6 +47,17 @@ var DynamicTable = {
 		};
 	},
 
+	getDefaultProps: function() {
+    return {
+      willSelectItem: (idx, item, cb) => cb(idx, item),
+      didSelectItem: (idx, item) => null,
+      willStartEditingItem: (idx, item, cb) => cb(idx, item),
+      didStartEditingItem: (idx, item, cb) => null,
+      isEditingItem: (idx, item, field, value, cb) => cb(value),
+      didEditItem: (idx, item, success, cb) => cb(idx, item, success)
+    };
+  },
+
 	render: function() {
 		console.log('render', this.state);
 
@@ -32,17 +65,27 @@ var DynamicTable = {
 			return (<div>No Data</div>);
 		}
 
+
+		
 		var header = this.state.columns.map(function(column) {
-			return (<th>{Case.title(column.name)}</th>);
+			var options = '';
+			if(column.values) {
+				options = column.values.map(function(value) {
+					return (<option>{value}</option>);
+				}.bind(this));
+				options = (<datalist id={column.name + 'values'}>{options}</datalist>);
+			}
+			return (<th>{Case.title(column.name)}{options}</th>);
 		}.bind(this));
-		//header.unshift(<th></th>);
 		header.push(<th></th>);
+
+
 
 		//console.log('this.props.widths', this.props.widths);
 
-		var cellFor = function(item, idx, column, selected) {
+		var cellFor = function(item, idx, column, selected, edited) {
 			var value = item[column.name];
-			//console.log(item, idx, column, selected);
+			//console.log(item, idx, column, selected, edited);
 
 			var tdStyle = {};
 			if(this.props.widths) {
@@ -50,8 +93,26 @@ var DynamicTable = {
 				//console.log(tdStyle);
 			}
 
+			var inputStyle = {
+				//'height': '100%',
+				//'margin-left': -12,
+				'padding-right': 0,
+				//'padding-left': 0,
+				//'margin-right': 0
+			};
+
+
+			//console.log(column);
+			var inputType = 'text';
+			if(column.subtype) {
+				inputType = column.subtype;
+			}
+
+			//console.log('subtype', inputType);
+
 			//var elem = {};
-			if(selected) {
+			if(edited) {
+
 
 
 				switch(column.type) {
@@ -60,6 +121,7 @@ var DynamicTable = {
 						return (<td style={tdStyle}><Input 
 							standalone
 							type='number' 
+							style={inputStyle}
 							value={value} 
 							onChange={this.onInputChange} 
 							data-idx={idx} 
@@ -69,20 +131,42 @@ var DynamicTable = {
 						return (<td style={tdStyle}><Input
 							standalone
 							type='checkbox'
-							style={{'margin': 0, display: 'table-cell'}}
+							style={{'margin': 0}}
 							checked={value}
 							onChange={this.onInputChange} 
 							data-idx={idx} 
 							data-col={column.name} />	</td>);
 
 					case 'String':
+						if(inputType === 'select') {
+							return (<td style={tdStyle}><Input 
+								standalone
+								type={'select'}
+								style={inputStyle}
+								value={value} 
+								onChange={this.onInputChange} 
+								data-idx={idx} 
+								data-col={column.name}>
+									{column.values.map(function(value) {
+										return (<option value={value}>{value}</option>);
+									})}
+								</Input></td>);
+						} else if(inputType === 'datalist') {
+							return (<td style={tdStyle}><Input 
+								standalone
+								type={'text'}
+								list={column.name + 'values'}
+								value={value} 
+								style={inputStyle}
+								onChange={this.onInputChange} 
+								data-idx={idx} 
+								data-col={column.name}></Input></td>);
+						}
 						return (<td style={tdStyle}><Input 
 							standalone
-							type='text' 
+							type={inputType}
 							value={value} 
-							style={{
-								display: 'table-cell'
-							}}
+							style={inputStyle}
 							onChange={this.onInputChange} 
 							data-idx={idx} 
 							data-col={column.name} /></td>);
@@ -102,26 +186,66 @@ var DynamicTable = {
 			}
 		}.bind(this);
 
+
+		var actionCell = (idx) => {
+			if(idx === this.state.editedRow) {
+				return (
+					<td>
+						<Button bsSize='xsmall' bsStyle='success' onClick={this.listener(idx, this.onClickOk)}>
+							<Glyphicon glyph='ok' />
+						</Button>
+						<span> </span>
+						<Button bsSize='xsmall' bsStyle='danger' onClick={this.listener(idx, this.onClickCancel)}>
+							<Glyphicon glyph='remove' />
+						</Button>
+					</td>
+				);
+				
+			} else if(idx === this.state.data.length) {
+				return (
+					<td>
+						<Button bsSize='xsmall' bsStyle='success' onClick={this.onClickAdd}>
+							<Glyphicon glyph='plus' />
+						</Button>
+					</td>
+				);
+			} else {
+				return (
+					<td>
+						<Button bsSize='xsmall' bsStyle='warning' onClick={this.listener(idx, this.onClickEdit)}>
+							<Glyphicon glyph='edit' />
+						</Button>
+						<span> </span>
+						<Button bsSize='xsmall' bsStyle='danger' onClick={this.listener(idx, this.onClickRemove)}>
+							<Glyphicon glyph='trash' />
+						</Button>
+					</td>
+				);	
+			}
+		};
+
+
+
+
 		var rows = this.state.data.map(function(item, idx) {
 			var row = this.state.columns.map(function(column) {
-				return cellFor(item, idx, column, this.state.selectedRow === idx);
+				return cellFor(item, idx, column, this.state.selectedRow === idx, this.state.editedRow === idx);
 			}.bind(this));
 			
 			var checked = (idx === this.state.selectedRow);
-			//console.log('ck', checked);
-			//row.unshift(<td><Input data-idx={idx} type='radio' name='select' checked={checked} style={{margin: 0}} standalone /></td>);
-			row.push(<td><Button data-idx={idx} bsSize='xsmall' bsStyle='danger' onClick={this.onClickDelete}>x</Button></td>);
-			return (<tr data-idx={idx} onClick={this.listener(idx, this.onClickRow)}>{row}</tr>);
+			row.push(actionCell(idx));
+			//row.push(<td><Button data-idx={idx} bsSize='xsmall' bsStyle='danger' onClick={this.onClickDelete}><Glyphicon glyph='remove' /></Button></td>);
+			return (<tr className={checked ? 'info' : ''} data-idx={idx} onClick={this.listener(idx, this.onClickRow)}>{row}</tr>);
 		}.bind(this));
 
 		var newItemRow = this.state.columns.map(function(column) {
-			return cellFor(this.state.newItem, null, column, this.state.selectedRow === this.state.data.length);
+			return cellFor(this.state.newItem, null, column, this.state.selectedRow === this.state.data.length, this.state.editedRow === this.state.data.length);
 		}.bind(this));
 		//newItemRow.unshift(<td></td>);
-		newItemRow.push(<td><Button bsSize='xsmall' bsStyle='success' onClick={this.onClickAdd}>+</Button></td>);
-		rows.push(<tr className='warning' onClick={this.listener(this.state.data.length, this.onClickRow)}>{newItemRow}</tr>);
+		newItemRow.push(actionCell(this.state.data.length));
+		rows.push(<tr className='warning' onClick={this.listener(this.state.data.length, this.onClickRow)} >{newItemRow}</tr>);
 
-		console.log('before rendor return');
+		//console.log('before rendor return');
 		return (
 			<div>
 				<Table striped condensed hover>
@@ -150,6 +274,7 @@ var DynamicTable = {
 						<Button onClick={this.onCancelDelete}>Cancel</Button>
 					</Modal.Footer>
 				</Modal>
+				
 			</div>
 		);
 	},
@@ -175,59 +300,148 @@ var DynamicTable = {
 		};
 	},
 
-	onInputChange: function(event) {
-		//console.log(event.target.type);
-		console.log('onInputChange', event.target.type, event.target.dataset.idx, event.target.dataset.col);
-		var item = event.target.dataset.idx
-			? this.state.data[event.target.dataset.idx]
-			: this.state.newItem;
+	copyItem: function(idx) {
+		//return Object.assign({}, this.state.data[idx]);
+		return JSON.parse(JSON.stringify(this.state.data[idx]));
+	},
 
+	onClickRow: function(event, idx) {
+		this.props.willSelectItem(idx, this.copyItem(idx), (idx, item) => {
+			this.setState({
+				selectedRow: idx
+			}, () => {
+				this.props.didSelectItem();
+			});
+		});
+	},
 
-		if(event.target.type === 'checkbox') {
-			//console.log(event.target.checked);
-			item[event.target.dataset.col] = event.target.checked;	
-		} else {
-			//console.log(event.target.value);
-			item[event.target.dataset.col] = event.target.value;
+	onClickEdit: function(event, idx) {
+		this.props.willStartEditingItem(idx, this.copyItem(idx), (idx, item) => {
+			this.setState({
+				uneditedItem: item,
+				editedRow: idx
+			}, () => {
+				this.props.disStartEditingItem();
+			});	
+		});
+
+		
+	},
+
+	onClickRemove: function(event, idx) {
+		this.setState({
+			showConfirmDelete: true,
+			itemToDelete: idx
+		});
+	},
+
+	onClickOk: function(event, idx) {
+		if(idx < this.state.data.length) {
+			this.setState({
+				editedRow: null
+			});
+			return;
 		}
 
-		if(event.target.dataset.idx) {
+		this.props.onAddRow(this.state.newItem, (error, item) => {
+			if(error) 
+				return;
+
+			this.state.data.push(item);
 			this.setState({
 				data: this.state.data,
-				newItem: this.state.newItem
-			});	
-		}
+				newItem: {},
+				selectedRow: this.state.data.length - 1,
+				editedRow: null
+			});
+			this.props.onChange(this.state);		
+		});
 		
-		this.props.onChange(this.state);
+	},
+
+	onClickCancel: function(event, idx) {
+		if(idx < this.state.data.length) {
+			this.state.data[idx] = this.state.uneditedItem;
+		}
+
+		this.setState({
+			editedRow: null
+		});
+
 	},
 
 	onClickAdd: function(event) {
-		console.log('add item', this.state.newItem);
-		this.state.data.push(this.state.newItem);
 		this.setState({
-			data: this.state.data,
-			newItem: {}
-		});
-		this.props.onChange(this.state);
+			editedRow: this.state.data.length
+		});	
 	},
 
-	onClickDelete: function(event) {
-		this.setState({
-			showConfirmDelete: true,
-			itemToDelete: event.target.dataset.idx
+	onInputChange: function(event) {
+		console.log('onInputChange', event.target.type, event.target.dataset.idx, event.target.dataset.col);
+		
+		var idx = event.target.dataset.idx;
+		var col = event.target.dataset.col;
+
+		var item = event.target.dataset.idx
+			? this.state.data[idx]
+			: this.state.newItem;
+
+		var value = event.target.type === 'checkbox'
+			? event.target.checked
+			: event.target.value;
+
+		this.props.onUpdateRow(idx, col, value, item, (error, value) => {
+			if(error) 
+				return;
+
+			item[col] = value;
+			this.setState({
+				data: this.state.data,
+				newItem: this.state.newItem
+			});
+			this.props.onChange(this.state);
 		});
+		
+	},
+
+
+	onClickAdd2: function(event) {
+		console.log('add item', this.state.newItem);
+
+		this.props.onAddRow(this.state.newItem, (error, item) => {
+			if(error) 
+				return;
+
+			this.state.data.push(item);
+			this.setState({
+				data: this.state.data,
+				newItem: {},
+				selectedRow: this.state.data.length - 1,
+				editedRow: null
+			});
+			this.props.onChange(this.state);		
+		});
+
+		
 	},
 
 	onConfirmDelete: function(event) {
 		console.log('delete item', this.state.itemToDelete);
 
-		this.state.data.splice(this.state.itemToDelete, 1);
-		this.setState({
-			data: this.state.data
+		this.props.onDeleteRow(this.state.itemToDelete, (error, idx) => {
+			if(error) return;
+
+			this.state.data.splice(idx, 1);
+			this.setState({
+				data: this.state.data
+			});
+			this.props.onChange(this.state);
+			this.onCancelDelete(event);
+			//this.props.onDeleteRow(event);
 		});
-		this.props.onChange(this.state);
-		this.onCancelDelete(event);
 	},
+
+
 
 	onCancelDelete: function(event) {
 		this.setState({
@@ -235,28 +449,21 @@ var DynamicTable = {
 		});
 	},
 
-	onSelectRow: function(event) {
-		console.log('select row', event.target.dataset.idx);
-		this.setState({
-			selectedRow: event.target.dataset.idx
-		});
-	},
-
-
 	closeDeleteConfirm: function(event) {
 		this.setState({
 			showConfirmDelete: false
 		});
 	},	
 
-	onClickRow: function(event, idx) {
-		//console.log(event.target.type, idx);
-		//console.log('row clicked', event.target.type, event.target);
-		//var tag = event.target.tagName;
-		//if(tag === 'TD' || tag === 'DIV' || event.target.type === 'radio')
-		console.log('onClickRow', idx);
+	
+
+	onDoubleClickRow: function(event, idx) {
+		if(this.state.editedRow === idx)
+			return;
+
+		this.props.onEditRow(idx);
 		this.setState({
-			selectedRow: idx
+			editedRow: idx
 		});
 	},
 

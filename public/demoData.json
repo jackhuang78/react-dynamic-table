@@ -7,10 +7,21 @@
 		"type": "String"
 	}, {
 		"name": "dateOfBirth",
-		"type": "String"
+		"type": "String",
+		"subtype": "date"
 	}, {
 		"name": "age",
 		"type": "Number"
+	}, {
+		"name": "major",
+		"type": "String",
+		"subtype": "select",
+		"values": ["economy", "computer science", "physics"]
+	}, {
+		"name": "country",
+		"type": "String",
+		"subtype": "datalist",
+		"values": ["USA", "UK", "Taiwan"]
 	}, {
 		"name": "alive",
 		"type": "Boolean"
@@ -19,14 +30,16 @@
 	"data": [{
 		"id": 1,
 		"name": "Adam Smith",
-		"dateOfBirth": "06/16/1723",
+		"dateOfBirth": "1723-06-16",
 		"age": 292,
+		"major": "economy",
 		"alive": false
 	}, {
 		"id": 2,
 		"name": "Bill Gates",
-		"dateOfBirth": "10/28/1955",
+		"dateOfBirth": "1955-10-28",
 		"age": 60,
+		"major": "computer science",
 		"alive": true
 	}]
 }
