@@ -1,11 +1,13 @@
 'use strict';
 
-var React = require('react');
+var React = require('react/addons');
 var ReactBootstrap = require('react-bootstrap');
 var Table = ReactBootstrap.Table;
 var Input = ReactBootstrap.Input;
 var Button = ReactBootstrap.Button;
 var Modal = ReactBootstrap.Modal;
+var Glyphicon = ReactBootstrap.Glyphicon;
+var ReactCSSTransitionGroup = React.addons.CSSTransitionGroup;
 
 var Case = require('case');
 
@@ -16,10 +18,13 @@ var Case = require('case');
  * @property {string} state.columns.name The column name.
  * @property {string} state.columns.type One of String, Number, or Boolean.
  * @property {string} state.columns.subtype One of Date.
- * @property {DynamicTable#rowsAffected} props.onSelectRow Called when a row is selected.
- * @property {DynamicTable#rowsAffected} props.onUpdateRow Called when a row is updated.
- * @property {DynamicTable#rowsAffected} props.onAddRow Called when a row is added.
- * @property {DynamicTable#rowsAffected} props.onDeleteRow Called when a row is deleted.
+ * @property {DynamicTable#willSelectItem} props.willSelectItem Called when an item would be selected.
+ * @property {DynamicTable#didSelectItem} props.didSelectItem Called when an item is selected.
+ * @property {DynamicTable#willRemoveItem} props.willRemoveItem Called when an item would be removed.
+ * @property {DynamicTable#didRemoveItem} props.didRemoveItem Called when an item is removed.
+ * @property {DynamicTable#willStartCreatingItem} props.willStartCreatingItem Called when an item would be started to be created.
+ * @property {DynamicTable#didStartCreatingItem} props.didStartCreatingItem Called when an item is started to be created.
+ * 
  */
 var DynamicTable = {
 
@@ -30,7 +35,6 @@ var DynamicTable = {
   * @param {number|string|boolean} value The changed value.
   * @param {object} item The old item.
   * @param {DynamicTable#valueUpdate} cb Callback to provide the value to update.
-  * @return {null}
   */
 
 	/**
@@ -47,7 +51,62 @@ var DynamicTable = {
 		};
 	},
 
+	getDefaultProps: function getDefaultProps() {
+		return {
+			willSelectItem: function willSelectItem(idx, item, cb) {
+				return cb(false);
+			},
+			didSelectItem: function didSelectItem(idx, item) {
+				return null;
+			},
+
+			willRemoveItem: function willRemoveItem(idx, item, cb) {
+				return cb(false);
+			},
+			didRemoveItem: function didRemoveItem(idx, item) {
+				return null;
+			},
+
+			willStartCreatingItem: function willStartCreatingItem(item, cb) {
+				return cb(false, item);
+			},
+			didStartCreatingItem: function didStartCreatingItem(item) {
+				return null;
+			},
+
+			willStartEditingItem: function willStartEditingItem(idx, item, cb) {
+				return cb(false, item);
+			},
+			didStartEditingItem: function didStartEditingItem(item) {
+				return null;
+			},
+
+			willEditField: function willEditField(idx, item, field, value, cb) {
+				return cb(false, value);
+			},
+			didEditField: function didEditField(idx, item, field, value) {
+				return null;
+			},
+
+			willSaveEditing: function willSaveEditing(idx, item, cb) {
+				return cb(false, item);
+			},
+			didSaveEditing: function didSaveEditing(idx, item) {
+				return null;
+			},
+
+			willCancelEditing: function willCancelEditing(idx, item, cb) {
+				return cb(false);
+			},
+			didCancelEditing: function didCancelEditing(idx, item) {
+				return null;
+			}
+		};
+	},
+
 	render: function render() {
+		var _this = this;
+
 		console.log('render', this.state);
 
 		if (!this.state) {
@@ -85,9 +144,9 @@ var DynamicTable = {
 
 		//console.log('this.props.widths', this.props.widths);
 
-		var cellFor = (function (item, idx, column, selected) {
+		var cellFor = (function (item, idx, column, selected, edited) {
 			var value = item[column.name];
-			console.log(item, idx, column, selected);
+			//console.log(item, idx, column, selected, edited);
 
 			var tdStyle = {};
 			if (this.props.widths) {
@@ -101,18 +160,18 @@ var DynamicTable = {
 				'padding-right': 0
 			};
 
+			//console.log(column);
 			//'padding-left': 0,
 			//'margin-right': 0
-			console.log(column);
 			var inputType = 'text';
 			if (column.subtype) {
 				inputType = column.subtype;
 			}
 
-			console.log('subtype', inputType);
+			//console.log('subtype', inputType);
 
 			//var elem = {};
-			if (selected) {
+			if (edited) {
 
 				switch (column.type) {
 					case 'Number':
@@ -222,50 +281,87 @@ var DynamicTable = {
 			}
 		}).bind(this);
 
+		var actionCell = function actionCell(idx) {
+			if (idx === _this.state.editedRow) {
+				return React.createElement(
+					'td',
+					null,
+					React.createElement(
+						Button,
+						{ bsSize: 'xsmall', bsStyle: 'success', onClick: _this.listener(idx, _this.onClickOk) },
+						React.createElement(Glyphicon, { glyph: 'ok' })
+					),
+					React.createElement(
+						'span',
+						null,
+						' '
+					),
+					React.createElement(
+						Button,
+						{ bsSize: 'xsmall', bsStyle: 'danger', onClick: _this.listener(idx, _this.onClickCancel) },
+						React.createElement(Glyphicon, { glyph: 'remove' })
+					)
+				);
+			} else if (idx === _this.state.data.length) {
+				return React.createElement(
+					'td',
+					null,
+					React.createElement(
+						Button,
+						{ bsSize: 'xsmall', bsStyle: 'success', onClick: _this.onClickAdd },
+						React.createElement(Glyphicon, { glyph: 'plus' })
+					)
+				);
+			} else {
+				return React.createElement(
+					'td',
+					null,
+					React.createElement(
+						Button,
+						{ bsSize: 'xsmall', bsStyle: 'warning', onClick: _this.listener(idx, _this.onClickEdit) },
+						React.createElement(Glyphicon, { glyph: 'edit' })
+					),
+					React.createElement(
+						'span',
+						null,
+						' '
+					),
+					React.createElement(
+						Button,
+						{ bsSize: 'xsmall', bsStyle: 'danger', onClick: _this.listener(idx, _this.onClickRemove) },
+						React.createElement(Glyphicon, { glyph: 'trash' })
+					)
+				);
+			}
+		};
+
 		var rows = this.state.data.map((function (item, idx) {
 			var row = this.state.columns.map((function (column) {
-				return cellFor(item, idx, column, this.state.selectedRow === idx);
+				return cellFor(item, idx, column, this.state.selectedRow === idx, this.state.editedRow === idx);
 			}).bind(this));
 
 			var checked = idx === this.state.selectedRow;
-			//console.log('ck', checked);
-			//row.unshift(<td><Input data-idx={idx} type='radio' name='select' checked={checked} style={{margin: 0}} standalone /></td>);
-			row.push(React.createElement(
-				'td',
-				null,
-				React.createElement(
-					Button,
-					{ 'data-idx': idx, bsSize: 'xsmall', bsStyle: 'danger', onClick: this.onClickDelete },
-					'x'
-				)
-			));
+			row.push(actionCell(idx));
+			//row.push(<td><Button data-idx={idx} bsSize='xsmall' bsStyle='danger' onClick={this.onClickDelete}><Glyphicon glyph='remove' /></Button></td>);
 			return React.createElement(
 				'tr',
-				{ 'data-idx': idx, onDoubleClick: this.listener(idx, this.onClickRow) },
+				{ className: checked ? 'info' : '', 'data-idx': idx, onClick: this.listener(idx, this.onClickRow) },
 				row
 			);
 		}).bind(this));
 
 		var newItemRow = this.state.columns.map((function (column) {
-			return cellFor(this.state.newItem, null, column, this.state.selectedRow === this.state.data.length);
+			return cellFor(this.state.newItem, null, column, this.state.selectedRow === this.state.data.length, this.state.editedRow === this.state.data.length);
 		}).bind(this));
 		//newItemRow.unshift(<td></td>);
-		newItemRow.push(React.createElement(
-			'td',
-			null,
-			React.createElement(
-				Button,
-				{ bsSize: 'xsmall', bsStyle: 'success', onClick: this.onClickAdd },
-				'+'
-			)
-		));
+		newItemRow.push(actionCell(this.state.data.length));
 		rows.push(React.createElement(
 			'tr',
 			{ className: 'warning', onClick: this.listener(this.state.data.length, this.onClickRow) },
 			newItemRow
 		));
 
-		console.log('before rendor return');
+		//console.log('before rendor return');
 		return React.createElement(
 			'div',
 			null,
@@ -291,7 +387,7 @@ var DynamicTable = {
 				Modal,
 				{
 					show: this.state.showConfirmDelete,
-					onHide: this.onCancelDelete,
+					onHide: this.onCancelRemove,
 					container: this,
 					'aria-labelledby': 'contained-modal-title' },
 				React.createElement(
@@ -315,12 +411,12 @@ var DynamicTable = {
 					null,
 					React.createElement(
 						Button,
-						{ bsStyle: 'danger', onClick: this.onConfirmDelete },
+						{ bsStyle: 'danger', onClick: this.onConfirmRemove },
 						'Confirm'
 					),
 					React.createElement(
 						Button,
-						{ onClick: this.onCancelDelete },
+						{ onClick: this.onCancelRemove },
 						'Cancel'
 					)
 				)
@@ -345,8 +441,172 @@ var DynamicTable = {
 		};
 	},
 
+	copyItem: function copyItem(item) {
+		//return Object.assign({}, this.state.data[idx]);
+		return JSON.parse(JSON.stringify(item));
+	},
+
+	/**
+  * @callback DynamicTable#willSelectItem
+  * @param {number} index The index of the item to be selected.
+  * @param {object} item A copy of the item to be selected.
+  * @param {DynamicTable#willSelectItemCallback} cb Callback.
+  */
+	/**
+  * @callback DynamicTable#willSelectItemCallback
+  * @param  {boolean} error Will not select the item if set.
+  */
+	/**
+  * @callback DynamicTable#didSelectItem
+  * @param  {number} index The index of the selected item.
+  * @param  {object} item A copy of the selected item.
+  */
+	onClickRow: function onClickRow(event, idx) {
+		var _this2 = this;
+
+		if (idx == this.state.data.length) return;
+
+		var item = this.copyItem(this.state.data[idx]);
+
+		this.props.willSelectItem(idx, item, function (error) {
+			if (error) return;
+
+			_this2.setState({
+				selectedRow: idx
+			}, function () {
+				_this2.props.didSelectItem(idx, item);
+			});
+		});
+	},
+
+	/**
+  * @callback DynamicTable#willRemoveItem
+  * @param {number} index The index of the item to be removed.
+  * @param {object} item A copy of the item to be removed.
+  * @param {DynamicTable#willRemoveItemCallback} cb Callback.
+  */
+	/**
+  * @callback DynamicTable#willRemoveItemCallback
+  * @param  {boolean} error Will not remove the item if set.
+  */
+	/**
+  * @callback DynamicTable#didRemoveItem
+  * @param  {number} index The index of the removed item.
+  * @param  {object} item A copy of the removed item.
+  */
+	onClickRemove: function onClickRemove(event, idx) {
+		this.setState({
+			showConfirmDelete: true,
+			itemToDelete: idx
+		});
+	},
+
+	onCancelRemove: function onCancelRemove(event) {
+		this.setState({
+			showConfirmDelete: false
+		});
+	},
+
+	onConfirmRemove: function onConfirmRemove(event) {
+		var _this3 = this;
+
+		var idx = this.state.itemToDelete;
+		var item = this.copyItem(this.state.data[idx]);
+		this.props.willRemoveItem(idx, item, function (error) {
+			if (error) {
+				_this3.onCancelRemove(event);
+				return;
+			}
+
+			_this3.state.data.splice(idx, 1);
+			_this3.setState({
+				data: _this3.state.data
+			}, function () {
+				_this3.props.onChange(_this3.state);
+				_this3.onCancelRemove(event);
+				_this3.props.didRemoveItem(idx, item);
+			});
+		});
+	},
+
+	/**
+  * @callback DynamicTable#willStartCreatingItem
+  * @param {object} item A copy of the item to be started to be created.
+  * @param {DynamicTable#willStartCreatingItemCallback} cb Callback.
+  */
+	/**
+  * @callback DynamicTable#willStartCreatingItemCallback
+  * @param  {boolean} error Will not start creating the item if set.
+  */
+	/**
+  * @callback DynamicTable#didStartCreatingItem
+  * @param  {object} item A copy of the item starting to be created.
+  */
+	onClickAdd: function onClickAdd(event) {
+		var _this4 = this;
+
+		var item = this.copyItem(this.state.newItem);
+		this.props.willStartCreatingItem(item, function (error, item) {
+			if (error) return;
+
+			_this4.setState({
+				newItem: item,
+				editedRow: _this4.state.data.length
+			}, function () {
+				_this4.props.didStartCreatingItem(item);
+			});
+		});
+	},
+
+	onClickEdit: function onClickEdit(event, idx) {
+		var _this5 = this;
+
+		this.props.willStartEditingItem(idx, this.copyItem(idx), function (idx, item) {
+			_this5.setState({
+				uneditedItem: item,
+				editedRow: idx
+			}, function () {
+				_this5.props.disStartEditingItem();
+			});
+		});
+	},
+
+	onClickOk: function onClickOk(event, idx) {
+		var _this6 = this;
+
+		if (idx < this.state.data.length) {
+			this.setState({
+				editedRow: null
+			});
+			return;
+		}
+
+		this.props.onAddRow(this.state.newItem, function (error, item) {
+			if (error) return;
+
+			_this6.state.data.push(item);
+			_this6.setState({
+				data: _this6.state.data,
+				newItem: {},
+				selectedRow: _this6.state.data.length - 1,
+				editedRow: null
+			});
+			_this6.props.onChange(_this6.state);
+		});
+	},
+
+	onClickCancel: function onClickCancel(event, idx) {
+		if (idx < this.state.data.length) {
+			this.state.data[idx] = this.state.uneditedItem;
+		}
+
+		this.setState({
+			editedRow: null
+		});
+	},
+
 	onInputChange: function onInputChange(event) {
-		var _this = this;
+		var _this7 = this;
 
 		console.log('onInputChange', event.target.type, event.target.dataset.idx, event.target.dataset.col);
 
@@ -357,48 +617,34 @@ var DynamicTable = {
 
 		var value = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
 
-		this.props.onUpdateRow(idx, col, value, item, function (value) {
+		this.props.onUpdateRow(idx, col, value, item, function (error, value) {
+			if (error) return;
+
 			item[col] = value;
-			_this.setState({
-				data: _this.state.data,
-				newItem: _this.state.newItem
+			_this7.setState({
+				data: _this7.state.data,
+				newItem: _this7.state.newItem
 			});
-			_this.props.onChange(_this.state);
+			_this7.props.onChange(_this7.state);
 		});
 	},
 
-	onClickAdd: function onClickAdd(event) {
+	onClickAdd2: function onClickAdd2(event) {
+		var _this8 = this;
+
 		console.log('add item', this.state.newItem);
-		this.state.data.push(this.state.newItem);
-		this.setState({
-			data: this.state.data,
-			newItem: {}
-		});
-		this.props.onChange(this.state);
-		this.props.onAddRow(event);
-	},
 
-	onClickDelete: function onClickDelete(event) {
-		this.setState({
-			showConfirmDelete: true,
-			itemToDelete: event.target.dataset.idx
-		});
-	},
+		this.props.onAddRow(this.state.newItem, function (error, item) {
+			if (error) return;
 
-	onConfirmDelete: function onConfirmDelete(event) {
-		console.log('delete item', this.state.itemToDelete);
-		this.state.data.splice(this.state.itemToDelete, 1);
-		this.setState({
-			data: this.state.data
-		});
-		this.props.onChange(this.state);
-		this.onCancelDelete(event);
-		this.props.onDeleteRow(event);
-	},
-
-	onCancelDelete: function onCancelDelete(event) {
-		this.setState({
-			showConfirmDelete: false
+			_this8.state.data.push(item);
+			_this8.setState({
+				data: _this8.state.data,
+				newItem: {},
+				selectedRow: _this8.state.data.length - 1,
+				editedRow: null
+			});
+			_this8.props.onChange(_this8.state);
 		});
 	},
 
@@ -408,11 +654,12 @@ var DynamicTable = {
 		});
 	},
 
-	onClickRow: function onClickRow(event, idx) {
-		console.log('onClickRow', idx);
-		this.props.onSelectRow(event);
+	onDoubleClickRow: function onDoubleClickRow(event, idx) {
+		if (this.state.editedRow === idx) return;
+
+		this.props.onEditRow(idx);
 		this.setState({
-			selectedRow: idx
+			editedRow: idx
 		});
 	}
 

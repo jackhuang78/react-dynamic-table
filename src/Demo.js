@@ -27,22 +27,26 @@ var Demo = React.createClass({
 					<DynamicTable ref='table' onChange={this.save} 
 						willSelectItem={(idx, item, cb) => {
 							this.showMessage('info', `Will select item ${idx}`); 
-							cb(idx, item); 
+							cb(false); 
 						}}
 						didSelectItem={(idx, item) => {
 							this.showMessage('info', `Did select item ${idx}`);
 						}}
-						willStartEditingItem={(idx, item, cb) => {
-							this.showMessage('info', `Will start editing item ${idx}`);
-							cb(idx, item);
+						willRemoveItem={(idx, item, cb) => {
+							this.showMessage('error', `Will remove item ${idx}`);
+							cb(false);
 						}}
-						didStartEditingItem={(idx, item) => {
-							this.showMessage('info', `Did start editing item ${idx}`);
+						didRemoveItem={(idx, item) => {
+							this.showMessage('error', `Did remove item ${idx}`);
 						}}
-						isEditingItem
-						didEditItem
-						willRemoveItem
-						didRemoveItem
+						willStartCreatingItem={(item, cb) => {
+							this.showMessage('warning', `Will start creating item`);
+							cb(false, item);
+						}}
+						didStartCreatingItem={(item) => {
+							this.showMessage('warning', `Did start creating item`);
+						}}
+
 					/>
 				</Panel>
 			</div>

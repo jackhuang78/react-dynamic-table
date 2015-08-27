@@ -17,6 +17,8 @@ var Demo = React.createClass({
 	displayName: 'Demo',
 
 	render: function render() {
+		var _this = this;
+
 		return React.createElement(
 			'div',
 			null,
@@ -35,10 +37,28 @@ var Demo = React.createClass({
 					'Reset Table'
 				),
 				React.createElement(DynamicTable, { ref: 'table', onChange: this.save,
-					onSelectRow: this.onSelectRow,
-					onUpdateRow: this.onUpdateRow,
-					onAddRow: this.onAddRow,
-					onDeleteRow: this.onDeleteRow
+					willSelectItem: function (idx, item, cb) {
+						_this.showMessage('info', 'Will select item ' + idx);
+						cb(false);
+					},
+					didSelectItem: function (idx, item) {
+						_this.showMessage('info', 'Did select item ' + idx);
+					},
+					willRemoveItem: function (idx, item, cb) {
+						_this.showMessage('error', 'Will remove item ' + idx);
+						cb(false);
+					},
+					didRemoveItem: function (idx, item) {
+						_this.showMessage('error', 'Did remove item ' + idx);
+					},
+					willStartCreatingItem: function (item, cb) {
+						_this.showMessage('warning', 'Will start creating item');
+						cb(false, item);
+					},
+					didStartCreatingItem: function (item) {
+						_this.showMessage('warning', 'Did start creating item');
+					}
+
 				})
 			)
 		);
@@ -52,9 +72,26 @@ var Demo = React.createClass({
 		this.load();
 	},
 
-	onSelectRow: function onSelectRow(event) {
+	showMessage: function showMessage(level, message, meta) {
 		this.refs.notificationSystem.addNotification({
-			message: 'Selected a row',
+			message: message,
+			level: level,
+			autoDismiss: 5
+		});
+	},
+
+	onSelectRow: function onSelectRow(idx) {
+		console.log('onSelectRow', idx);
+		this.refs.notificationSystem.addNotification({
+			message: 'Selected row ' + idx,
+			level: 'info',
+			autoDismiss: 5
+		});
+	},
+
+	onEditRow: function onEditRow(idx) {
+		this.refs.notificationSystem.addNotification({
+			message: 'Edit row ' + idx,
 			level: 'info',
 			autoDismiss: 5
 		});
@@ -62,27 +99,29 @@ var Demo = React.createClass({
 
 	onUpdateRow: function onUpdateRow(idx, col, value, item, cb) {
 		this.refs.notificationSystem.addNotification({
-			message: util.format('Updating a row: data[%d].%s=%s', idx, col, value),
+			message: 'Update row ' + idx + ': ' + col + '=' + value,
 			level: 'success',
 			autoDismiss: 5
 		});
-		cb(value);
+		cb(null, value);
 	},
 
-	onAddRow: function onAddRow(event) {
+	onAddRow: function onAddRow(item, cb) {
 		this.refs.notificationSystem.addNotification({
-			message: 'Added a row',
+			message: 'Add a row ' + item,
 			level: 'success',
 			autoDismiss: 5
 		});
+		cb(null, item);
 	},
 
-	onDeleteRow: function onDeleteRow(event) {
+	onDeleteRow: function onDeleteRow(idx, cb) {
 		this.refs.notificationSystem.addNotification({
-			message: 'Deleted a row',
+			message: 'Delete row ' + idx,
 			level: 'error',
 			autoDismiss: 5
 		});
+		cb(null, idx);
 	},
 
 	resetTable: function resetTable() {
