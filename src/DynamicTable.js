@@ -1,5 +1,11 @@
+//==============================
+//	Required modules
 var React = require('react/addons');
 var ReactBootstrap = require('react-bootstrap');
+var Case = require('case');
+
+//==============================
+//	ReactBootstrap components
 var Table = ReactBootstrap.Table;
 var Input = ReactBootstrap.Input;
 var Button = ReactBootstrap.Button;
@@ -7,7 +13,6 @@ var Modal = ReactBootstrap.Modal;
 var Glyphicon = ReactBootstrap.Glyphicon;
 var ReactCSSTransitionGroup = React.addons.CSSTransitionGroup;
 
-var Case = require('case');
 
 /**
  * @class DynamicTable
@@ -26,21 +31,6 @@ var Case = require('case');
  */
 var DynamicTable = {
 
-	/**
-	 * @callback DynamicTable#rowsAffected
-	 * @param {number} index The index of the row affected.
-	 * @param {string} column The column of the row's field affected.
-	 * @param {number|string|boolean} value The changed value.
-	 * @param {object} item The old item.
-	 * @param {DynamicTable#valueUpdate} cb Callback to provide the value to update.
-	 */
-	
-	/**
-	 * @callback DynamicTable#valueUpdate
-	 * @param {number|string|boolean} value The value to update
-	 */
-	
-
 	getInitialState: function() {
 		return {
 			columns: [],
@@ -51,29 +41,58 @@ var DynamicTable = {
 	},
 
 	getDefaultProps: function() {
-    return {
-    	willSelectItem: (idx, item, cb) => cb(false),
-      didSelectItem: (idx, item) => null,
-
+		return {
+			/**
+			 * @callback DynamicTable#willSelectItem
+			 * @param {number} index The index of the item to be selected.
+			 * @param {object} item A copy of the item to be selected.
+			 * @param {DynamicTable#willSelectItemCallback} cb Callback.
+			 */
+			willSelectItem: (idx, item, cb) => cb(false),
+			/**
+			 * @callback DynamicTable#didSelectItem
+			 * @param  {number} index The index of the selected item.
+			 * @param  {object} item A copy of the selected item.
+			 */
+			didSelectItem: (idx, item) => null,
+			/**
+			 * @callback DynamicTable#willRemoveItem
+			 * @param {number} index The index of the item to be removed.
+			 * @param {object} item A copy of the item to be removed.
+			 * @param {DynamicTable#willRemoveItemCallback} cb Callback.
+			 */
 			willRemoveItem: (idx, item, cb) => cb(false),
-      didRemoveItem: (idx, item) => null,
+			/**
+			 * @callback DynamicTable#didRemoveItem
+			 * @param  {number} index The index of the removed item.
+			 * @param  {object} item A copy of the removed item.
+			 */
+			didRemoveItem: (idx, item) => null,
+			/**
+			 * @callback DynamicTable#willStartCreatingItem
+			 * @param {object} item A copy of the item to be started to be created.
+			 * @param {DynamicTable#willStartCreatingItemCallback} cb Callback.
+			 */
+			willStartCreatingItem: (item, cb) => cb(false, item),
+			/**
+			 * @callback DynamicTable#didStartCreatingItem
+			 * @param  {object} item A copy of the item starting to be created.
+			 */
+			didStartCreatingItem: (item) => null,
 
-      willStartCreatingItem: (item, cb) => cb(false, item),
-      didStartCreatingItem: (item) => null,
+			willStartEditingItem: (idx, item, cb) => cb(false, item),
+			didStartEditingItem: (item) => null,
 
-      willStartEditingItem: (idx, item, cb) => cb(false, item),
-      didStartEditingItem: (item) => null,
+			willEditField: (idx, item, field, value, cb) => cb(false, value),
+			didEditField: (idx, item, field, value) => null,
 
-      willEditField: (idx, item, field, value, cb) => cb(false, value),
-      didEditField: (idx, item, field, value) => null,
+			willSaveEditing: (idx, item, cb) => cb(false, item),
+			didSaveEditing: (idx, item) => null,
 
-      willSaveEditing: (idx, item, cb) => cb(false, item),
-      didSaveEditing: (idx, item) => null,
-
-      willCancelEditing: (idx, item, cb) => cb(false),
-      didCancelEditing: (idx, item) => null
-    };
-  },
+			willCancelEditing: (idx, item, cb) => cb(false),
+			didCancelEditing: (idx, item) => null
+		};
+	},
 
 	render: function() {
 		console.log('render', this.state);
@@ -311,6 +330,8 @@ var DynamicTable = {
 		
 	},
 
+	//==============================
+	//	Helper functions
 	listener: function(idx, f) {
 		return function(event) {
 			f(event, idx);
@@ -318,119 +339,83 @@ var DynamicTable = {
 	},
 
 	copyItem: function(item) {
-		//return Object.assign({}, this.state.data[idx]);
 		return JSON.parse(JSON.stringify(item));
 	},
 
-
-	/**
-	 * @callback DynamicTable#willSelectItem
-	 * @param {number} index The index of the item to be selected.
-	 * @param {object} item A copy of the item to be selected.
-	 * @param {DynamicTable#willSelectItemCallback} cb Callback.
-	 */
-	/**
-	 * @callback DynamicTable#willSelectItemCallback
-	 * @param  {boolean} error Will not select the item if set.
-	 */
-	/**
-	 * @callback DynamicTable#didSelectItem
-	 * @param  {number} index The index of the selected item.
-	 * @param  {object} item A copy of the selected item.
-	 */
+	//==============================
+	//	Event listeners
 	onClickRow: function(event, idx) {
-		if(idx == this.state.data.length)
+		if(idx == this.state.data.length) 
 			return;
-
 		var item = this.copyItem(this.state.data[idx]);
-
-		this.props.willSelectItem(idx, item, (error) => {
-			if(error)	return;
-
-			this.setState({
-				selectedRow: idx
-			}, () => {
-				this.props.didSelectItem(idx, item);
-			});
+		this.props.willSelectItem(idx, item, 
+			/**
+			 * @callback DynamicTable#willSelectItemCallback
+			 * @param  {boolean} error Will not select the item if set.
+			 */
+			(error) => {
+				if(error) 
+					return;
+				this.setState({selectedRow: idx}, () => {
+					this.props.didSelectItem(idx, item);
+				});
 		});
 	},
 
-
-	/**
-	 * @callback DynamicTable#willRemoveItem
-	 * @param {number} index The index of the item to be removed.
-	 * @param {object} item A copy of the item to be removed.
-	 * @param {DynamicTable#willRemoveItemCallback} cb Callback.
-	 */
-	/**
-	 * @callback DynamicTable#willRemoveItemCallback
-	 * @param  {boolean} error Will not remove the item if set.
-	 */
-	/**
-	 * @callback DynamicTable#didRemoveItem
-	 * @param  {number} index The index of the removed item.
-	 * @param  {object} item A copy of the removed item.
-	 */
 	onClickRemove: function(event, idx) {
-		this.setState({
-			showConfirmDelete: true,
-			itemToDelete: idx
-		});
+		this.setState({showConfirmDelete: true,	itemToDelete: idx});
 	},	
 
 	onCancelRemove: function(event) {
-		this.setState({
-			showConfirmDelete: false
-		});
+		this.setState({showConfirmDelete: false});
 	},
 
 	onConfirmRemove: function(event) {
 		var idx = this.state.itemToDelete;
 		var item = this.copyItem(this.state.data[idx]);
-		this.props.willRemoveItem(idx, item, (error) => {
-			if(error) {
-				this.onCancelRemove(event);
-				return;
-			} 
-
-			this.state.data.splice(idx, 1);
-			this.setState({
-				data: this.state.data
-			}, () => {
-				this.props.onChange(this.state);
-				this.onCancelRemove(event);
-				this.props.didRemoveItem(idx, item);
-			});
+		this.props.willRemoveItem(idx, item, 
+			/**
+			 * @callback DynamicTable#willRemoveItemCallback
+			 * @param  {boolean} error Will not remove the item if set.
+			 */
+			(error) => {
+				if(error) {
+					this.onCancelRemove(event);
+					return;
+				} 
+				this.state.data.splice(idx, 1);
+				this.setState({data: this.state.data}, () => {
+					this.props.onChange(this.state);
+					this.onCancelRemove(event);
+					this.props.didRemoveItem(idx, item);
+				});
 		});
 	},
 
-	/**
-	 * @callback DynamicTable#willStartCreatingItem
-	 * @param {object} item A copy of the item to be started to be created.
-	 * @param {DynamicTable#willStartCreatingItemCallback} cb Callback.
-	 */
-	/**
-	 * @callback DynamicTable#willStartCreatingItemCallback
-	 * @param  {boolean} error Will not start creating the item if set.
-	 */
-	/**
-	 * @callback DynamicTable#didStartCreatingItem
-	 * @param  {object} item A copy of the item starting to be created.
-	 */
 	onClickAdd: function(event) {
 		var item = this.copyItem(this.state.newItem);
-		this.props.willStartCreatingItem(item, (error, item) => {
-			if(error)	return;
-
-			this.setState({
-				newItem: item,
-				editedRow: this.state.data.length
-			}, () => {
-				this.props.didStartCreatingItem(item);
-			});	
+		this.props.willStartCreatingItem(item, 
+			/**
+			 * @callback DynamicTable#willStartCreatingItemCallback
+			 * @param  {boolean} error Will not start creating the item if set.
+			 * @param  {item} item The item to start creating.
+			 */
+			(error, item) => {
+				if(error)	
+					return;
+				this.setState({newItem: item,	editedRow: this.state.data.length}, () => {
+					this.props.didStartCreatingItem(item);
+				});	
 		});
-		
 	},
+
+
+
+
+
+
+
+
 
 
 	onClickEdit: function(event, idx) {
