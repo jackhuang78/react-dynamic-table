@@ -79,17 +79,61 @@ var DynamicTable = {
 			 * @param  {object} item A copy of the item starting to be created.
 			 */
 			didStartCreatingItem: (item) => null,
-
+			/**
+			 * @callback DynamicTable#willStartEditingItem
+			 * @param {number} index The index of the item to be started to be edited.
+			 * @param {object} item A copy of the item to be started to be edited.
+			 * @param {DynamicTable#willStartEditingItemCallback} cb Callback.
+			 */
 			willStartEditingItem: (idx, item, cb) => cb(false, item),
-			didStartEditingItem: (item) => null,
-
-			willEditField: (idx, item, field, value, cb) => cb(false, value),
-			didEditField: (idx, item, field, value) => null,
-
-			willSaveEditing: (idx, item, cb) => cb(false, item),
-			didSaveEditing: (idx, item) => null,
-
+			/**
+			 * @callback DynamicTable#didStartEditingItem
+			 * @param {number} index The index of the item starting to be edited.
+			 * @param {object} item A copy of the item starting to be edited.
+			 */
+			didStartEditingItem: (idx, item) => null,
+			/**
+			 * @callback DynamicTable#willEditItem
+			 * @param {number} index The index of the item.
+			 * @param {object} item A copy of the item (containing the old value).
+			 * @param {string} field The edited field.
+			 * @param {number|boolean|string} value The new value.
+			 * @param {DynamicTable#willEditFieldCallback} cb Callback.
+			 */
+			willEditItem: (idx, item, field, value, cb) => cb(false, value),
+			/**
+			 * @callback DynamicTable#didEditItem
+			 * @param {number} index The index of the item.
+			 * @param {object} item A copy of the item.
+			 * @param {string} field The edited field.
+			 * @param {number|boolean|string} value The new value.
+			 */
+			didEditItem: (idx, item, field, value) => null,
+			/**
+			 * @callback DynamicTable#willFinishEditingItem
+			 * @param {number} index The index of the edited item.
+			 * @param {object} item A copy of the item.
+			 * @param {DynamicTable#willFinishEditingItemCallback} cb Callback.
+			 */
+			willFinishEditingItem: (idx, item, cb) => cb(false, item),
+			/**
+			 * @callback DynamicTable#didFinishEditingItem
+			 * @param {number} index The index of the edited item.
+			 * @param {object} item A copy of the item.
+			 */
+			didFinishEditingItem: (idx, item) => null,
+			/**
+			 * @callback DynamicTable#willCancelEditingItem
+			 * @param {number} index The index of the edited item.
+			 * @param {object} item A copy of the item.
+			 * @param {DynamicTable#willCancelEditingItemCallback} cb Callback.
+			 */
 			willCancelEditing: (idx, item, cb) => cb(false),
+			/**
+			 * @callback DynamicTable#didCancelEditingItem
+			 * @param {number} index The index of the edited item.
+			 * @param {object} item A copy of the item.
+			 */
 			didCancelEditing: (idx, item) => null
 		};
 	},
@@ -144,9 +188,8 @@ var DynamicTable = {
 				inputType = column.subtype;
 			}
 
-			//console.log('subtype', inputType);
+			var onInputChange = this.listener({idx: idx, col: column.name}, this.onInputChange);
 
-			//var elem = {};
 			if(edited) {
 
 
@@ -159,7 +202,7 @@ var DynamicTable = {
 							type='number' 
 							style={inputStyle}
 							value={value} 
-							onChange={this.onInputChange} 
+							onChange={onInputChange} 
 							data-idx={idx} 
 							data-col={column.name} /></td>);
 
@@ -169,7 +212,7 @@ var DynamicTable = {
 							type='checkbox'
 							style={{'margin': 0}}
 							checked={value}
-							onChange={this.onInputChange} 
+							onChange={onInputChange} 
 							data-idx={idx} 
 							data-col={column.name} />	</td>);
 
@@ -180,7 +223,7 @@ var DynamicTable = {
 								type={'select'}
 								style={inputStyle}
 								value={value} 
-								onChange={this.onInputChange} 
+								onChange={onInputChange} 
 								data-idx={idx} 
 								data-col={column.name}>
 									{column.values.map(function(value) {
@@ -194,7 +237,7 @@ var DynamicTable = {
 								list={column.name + 'values'}
 								value={value} 
 								style={inputStyle}
-								onChange={this.onInputChange} 
+								onChange={onInputChange} 
 								data-idx={idx} 
 								data-col={column.name}></Input></td>);
 						}
@@ -203,7 +246,7 @@ var DynamicTable = {
 							type={inputType}
 							value={value} 
 							style={inputStyle}
-							onChange={this.onInputChange} 
+							onChange={onInputChange} 
 							data-idx={idx} 
 							data-col={column.name} /></td>);
 					default:
@@ -275,7 +318,7 @@ var DynamicTable = {
 		}.bind(this));
 
 		var newItemRow = this.state.columns.map(function(column) {
-			return cellFor(this.state.newItem, null, column, this.state.selectedRow === this.state.data.length, this.state.editedRow === this.state.data.length);
+			return cellFor(this.state.newItem, this.state.data.length, column, this.state.selectedRow === this.state.data.length, this.state.editedRow === this.state.data.length);
 		}.bind(this));
 		//newItemRow.unshift(<td></td>);
 		newItemRow.push(actionCell(this.state.data.length));
@@ -332,9 +375,9 @@ var DynamicTable = {
 
 	//==============================
 	//	Helper functions
-	listener: function(idx, f) {
+	listener: function(meta, f) {
 		return function(event) {
-			f(event, idx);
+			f(event, meta);
 		};
 	},
 
@@ -410,133 +453,143 @@ var DynamicTable = {
 	},
 
 
-
-
-
-
-
-
-
-
 	onClickEdit: function(event, idx) {
-		this.props.willStartEditingItem(idx, this.copyItem(idx), (idx, item) => {
-			this.setState({
-				uneditedItem: item,
-				editedRow: idx
-			}, () => {
-				this.props.disStartEditingItem();
-			});	
-		});
+		var item = this.copyItem(this.state.data[idx]);
+		this.props.willStartEditingItem(idx, item, 
+			/**
+			 * @callback DynamicTable#willStartEditingItemCallback
+			 * @param {boolean} error Will not start editing the item if set.
+			 * @param {item} item The item to start editing.
+			 */
+			(error, item) => {
+				if(error)
+					return;
+				var uneditedItem = this.state.data[idx];
+				this.state.data[idx] = item;
+				this.setState({
+					data: this.state.data,
+					uneditedItem: uneditedItem,
+					editedRow: idx
+				}, () => {
+					this.props.didStartEditingItem(idx, item);
+				});
+			}	
+		);
 
 		
 	},
 
 
-
 	onClickOk: function(event, idx) {
-		if(idx < this.state.data.length) {
-			this.setState({
-				editedRow: null
-			});
-			return;
-		}
+		var item = (idx < this.state.data.length) 
+			? this.copyItem(this.state.data[idx])
+			: this.copyItem(this.state.newItem);
+		this.props.willFinishEditingItem(idx, item,
+			/**
+			 * @callback DynamicTable#willFinishEditingItemCallback
+			 * @param {boolean} error Will not save the edited item if set.
+			 * @param {item} item The item to be saved.
+			 */
+			(error, item) => {
+				if(error) {
+					if(idx < this.state.data.length)
+						this.state.data[idx] = this.state.uneditedItem;
+					else 
+						this.state.newItem = {};
+					this.setState({
+						data: this.state.data, 
+						newItem: this.state.newItem,
+						editedRow: null
+					});
+					return;
+				}
 
-		this.props.onAddRow(this.state.newItem, (error, item) => {
-			if(error) 
-				return;
-
-			this.state.data.push(item);
-			this.setState({
-				data: this.state.data,
-				newItem: {},
-				selectedRow: this.state.data.length - 1,
-				editedRow: null
-			});
-			this.props.onChange(this.state);		
-		});
+				if(idx < this.state.data.length) 
+					this.state.data[idx] = item;
+				else
+					this.state.data.push(item);
+				this.setState({
+					data: this.state.data,
+					newItem: {},
+					selectedRow: idx,
+					editedRow: null
+				}, () => {
+					this.props.didFinishEditingItem(idx, item);
+				});
+			}
+		);
 		
 	},
 
 	onClickCancel: function(event, idx) {
-		if(idx < this.state.data.length) {
-			this.state.data[idx] = this.state.uneditedItem;
-		}
-
-		this.setState({
-			editedRow: null
-		});
-
+		var item = (idx < this.state.data.length)
+			? this.copyItem(this.state.data[idx])
+			: this.copyItem(this.state.newItem);
+		this.props.willCancelEditingItem(idx, item, 
+			/**
+			 * @callback DynamicTable#willCancelEditingItemCallback
+			 * @param {boolean} error Will not cancel the editing if set.
+			 */
+			(error) => {
+				if(error)
+					return;
+				if(idx < this.state.data.length)
+					this.state.data[idx] = this.state.data.uneditedItem;
+				else
+					this.state.newItem = {};
+				this.setState({
+					data: this.state.data,
+					newItem: this.state.newItem,
+					selectedRow: idx,
+					editedRow: null
+				}, () => {
+					this.props.didCancelEditingItem(idx, item);
+				});
+			}
+		);
 	},
 
 	
 
-	onInputChange: function(event) {
-		console.log('onInputChange', event.target.type, event.target.dataset.idx, event.target.dataset.col);
-		
-		var idx = event.target.dataset.idx;
-		var col = event.target.dataset.col;
+	onInputChange: function(event, meta) {
+		var idx = meta.idx;
+		var col = meta.col;
+		var item = idx < this.state.data.length
+			? this.copyItem(this.state.data[idx])
+			: this.copyItem(this.state.newItem);
 
-		var item = event.target.dataset.idx
-			? this.state.data[idx]
-			: this.state.newItem;
-
-		var value = event.target.type === 'checkbox'
+		var value = (event.target.type === 'checked')
 			? event.target.checked
 			: event.target.value;
 
-		this.props.onUpdateRow(idx, col, value, item, (error, value) => {
-			if(error) 
-				return;
-
-			item[col] = value;
-			this.setState({
-				data: this.state.data,
-				newItem: this.state.newItem
-			});
-			this.props.onChange(this.state);
-		});
 		
+		this.props.willEditItem(idx, item, col, value,
+			/**
+			 * @callback DynamicTable#willEditItemCallback
+			 * @param {boolean} error Will not edit if set.
+			 * @param {string|number|boolean} value The new value to set.
+			 */
+			(error, value) => {
+				if(error) {
+					return;
+				}
+
+				var item = idx < this.state.data.length
+					? this.state.data[idx]
+					: this.state.newItem;
+				item[col] = value;
+				this.setState({
+					data: this.state.data,
+					newItem: this.state.newItem
+				}, () => {
+					this.props.didEditItem(idx, item, col, value);
+				});
+			}
+		);
 	},
-
-
-	onClickAdd2: function(event) {
-		console.log('add item', this.state.newItem);
-
-		this.props.onAddRow(this.state.newItem, (error, item) => {
-			if(error) 
-				return;
-
-			this.state.data.push(item);
-			this.setState({
-				data: this.state.data,
-				newItem: {},
-				selectedRow: this.state.data.length - 1,
-				editedRow: null
-			});
-			this.props.onChange(this.state);		
-		});
-
-		
-	},
-
-	
-
-	closeDeleteConfirm: function(event) {
-		this.setState({
-			showConfirmDelete: false
-		});
-	},	
-
-	
 
 	onDoubleClickRow: function(event, idx) {
-		if(this.state.editedRow === idx)
-			return;
-
-		this.props.onEditRow(idx);
-		this.setState({
-			editedRow: idx
-		});
+		this.onClickRow(event, idx);
 	},
 
 };

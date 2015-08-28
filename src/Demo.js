@@ -46,7 +46,34 @@ var Demo = React.createClass({
 						didStartCreatingItem={(item) => {
 							this.showMessage('warning', `Did start creating item`);
 						}}
-
+						willStartEditingItem={(idx, item, cb) => {
+							this.showMessage('warning', `Will start editing item ${idx}`);
+							cb(false, item);
+						}}
+						didStartEditingItem={(idx, item) => {
+							this.showMessage('warning', `Did start editing item ${idx}`);
+						}}
+						willFinishEditingItem={(idx, item, cb) => {
+							this.showMessage('success', `Will finish editing item ${idx}`);
+							cb(false, item);
+						}}
+						didFinishEditingItem={(idx, item) => {
+							this.showMessage('success', `Did finish editing item ${idx}`);
+						}}
+						willCancelEditingItem={(idx, item, cb) => {
+							this.showMessage('error', `Will cancel editing item ${idx}`);
+							cb(false, item);
+						}}
+						didCancelEditingItem={(idx, item) => {
+							this.showMessage('error', `Did cancel editing item ${idx}`);
+						}}
+						willEditItem={(idx, item, col, value, cb) => {
+							this.showMessage('info', `Will edit item ${idx} ${col}=${value}`);
+							cb(false, value);
+						}}
+						didEditItem={(idx, item, col, value) => {
+							this.showMessage('info', `Did edit item ${idx} ${col}=${value}`);
+						}}
 					/>
 				</Panel>
 			</div>
