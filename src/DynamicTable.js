@@ -573,7 +573,6 @@ var DynamicTable = {
 				if(error) {
 					return;
 				}
-
 				var item = idx < this.state.data.length
 					? this.state.data[idx]
 					: this.state.newItem;
