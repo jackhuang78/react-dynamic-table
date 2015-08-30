@@ -9,12 +9,18 @@ var NotificationSystem = require('react-notification-system');
 var DynamicTable = require('./DynamicTable');
 var cookie = require('react-cookie');
 var util = require('util');
+var moment = require('moment');
 var sampleData = require('../public/demoData.json');
+//var Highlight = require('react-highlight');
 
+var PrismCode = require('react-prism').PrismCode;
+
+console.log(PrismCode);
+
+//var exampleCode = require('../public/example-code.js');
 
 
 var Demo = React.createClass({
-
 
 
 	render: function() {
@@ -24,68 +30,89 @@ var Demo = React.createClass({
 				<Panel style={{margin: 30}}>
 					<PageHeader>DynamicTable Demo</PageHeader>
 					<Button bsStyle='danger' onClick={this.resetTable}>Reset Table</Button>
+					<span> </span>
+					<Button bsStyle='info' href='https://github.com/jhuang78/react-dynamic-table/blob/master/src/Demo.js?ts=2'>See Usage</Button>
+
+
 					<DynamicTable ref='table' onChange={this.save} 
 						willSelectItem={(idx, item, cb) => {
-							this.showMessage('info', `Will select item ${idx}`); 
+							this.appendLog(`Will select item ${idx}`, item);
 							cb(false); 
 						}}
 						didSelectItem={(idx, item) => {
-							this.showMessage('info', `Did select item ${idx}`);
+							this.appendLog(`Did select item ${idx}`, item);
 						}}
 						willRemoveItem={(idx, item, cb) => {
-							this.showMessage('error', `Will remove item ${idx}`);
+							this.appendLog(`Will remove item ${idx}`, item);
 							cb(false);
 						}}
 						didRemoveItem={(idx, item) => {
-							this.showMessage('error', `Did remove item ${idx}`);
+							this.appendLog(`Did remove item ${idx}; save data`, item);
+							this.save(this.refs.table.state);
 						}}
 						willStartCreatingItem={(item, cb) => {
-							this.showMessage('warning', `Will start creating item`);
+							this.appendLog(`Will start creating item`, item);
 							cb(false, item);
 						}}
 						didStartCreatingItem={(item) => {
-							this.showMessage('warning', `Did start creating item`);
+							this.appendLog(`Did start creating item`, item);
 						}}
 						willStartEditingItem={(idx, item, cb) => {
-							this.showMessage('warning', `Will start editing item ${idx}`);
+							this.appendLog(`Will start editing item ${idx}`, item);
 							cb(false, item);
 						}}
 						didStartEditingItem={(idx, item) => {
-							this.showMessage('warning', `Did start editing item ${idx}`);
+							this.appendLog(`Did start editing item ${idx}`, item);
 						}}
 						willFinishEditingItem={(idx, item, cb) => {
-							this.showMessage('success', `Will finish editing item ${idx}`);
+							this.appendLog(`Will finish editing item ${idx}`, item);
 							cb(false, item);
 						}}
 						didFinishEditingItem={(idx, item) => {
-							this.showMessage('success', `Did finish editing item ${idx}`);
+							this.appendLog(`Did finish editing item ${idx}; save data`, item);
+							this.save(this.refs.table.state);
 						}}
 						willCancelEditingItem={(idx, item, cb) => {
-							this.showMessage('error', `Will cancel editing item ${idx}`);
+							this.appendLog(`Will cancel editing item ${idx}`, item);
 							cb(false, item);
 						}}
 						didCancelEditingItem={(idx, item) => {
-							this.showMessage('error', `Did cancel editing item ${idx}`);
+							this.appendLog(`Did cancel editing item ${idx}`, item);
 						}}
 						willEditItem={(idx, item, col, value, cb) => {
-							this.showMessage('info', `Will edit item ${idx} ${col}=${value}`);
+							this.appendLog(`Will edit item ${idx} ${col}=${value}`, item);
 							cb(false, value);
 						}}
 						didEditItem={(idx, item, col, value) => {
-							this.showMessage('info', `Did edit item ${idx} ${col}=${value}`);
+							this.appendLog(`Did edit item ${idx} ${col}=${value}`, item);
+							//this.save(this.refs.table.state);
 						}}
 					/>
+
+
+					<Input ref='logs' type='textarea' label='Logs' style={{height: 100}}value={this.state.logs} />
 				</Panel>
+				
 			</div>
 		);
 	},
 
 	getInitialState: function() {
-		return {};
+		return {
+			logs: 'Initialize table.'
+		};
 	},
 
 	componentDidMount: function() {
 		this.load();
+	},
+
+
+	appendLog: function(s, item) {
+		s = util.format('%s: %s %j', moment().format('YYYY/MM/DD HH:mm:ss.SSS'), s, item);
+		this.setState({
+			logs: this.state.logs + '\n' + s
+		});
 	},
 
 	showMessage: function(level, message, meta) {
@@ -94,51 +121,6 @@ var Demo = React.createClass({
 			level: level,
 			autoDismiss: 5
 		});
-	},
-
-	onSelectRow: function(idx) {
-		console.log('onSelectRow', idx);
-		this.refs.notificationSystem.addNotification({
-			message: `Selected row ${idx}`,
-			level: 'info',
-			autoDismiss: 5,
-		});
-	},
-
-	onEditRow: function(idx) {
-		this.refs.notificationSystem.addNotification({
-			message: `Edit row ${idx}`,
-			level: 'info',
-			autoDismiss: 5
-		});
-	},
-
-	onUpdateRow: function(idx, col, value, item, cb) {
-		this.refs.notificationSystem.addNotification({
-			message: `Update row ${idx}: ${col}=${value}`,
-			level: 'success',
-			autoDismiss: 5
-		});
-		cb(null, value);
-
-	},
-
-	onAddRow: function(item, cb) {
-		this.refs.notificationSystem.addNotification({
-			message: `Add a row ${item}`,
-			level: 'success',
-			autoDismiss: 5,
-		});
-		cb(null, item);
-	},
-
-	onDeleteRow: function(idx, cb) {
-		this.refs.notificationSystem.addNotification({
-			message: `Delete row ${idx}`,
-			level: 'error',
-			autoDismiss: 5,
-		});
-		cb(null, idx);
 	},
 
 	resetTable: function() {

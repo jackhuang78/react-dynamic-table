@@ -31,6 +31,8 @@ var ReactCSSTransitionGroup = React.addons.CSSTransitionGroup;
  */
 var DynamicTable = {
 
+	widths: {},
+
 	getInitialState: function() {
 		return {
 			columns: [],
@@ -138,6 +140,10 @@ var DynamicTable = {
 		};
 	},
 
+	getData: function() {
+		return this.copyItem(this.state.data);
+	},
+
 	render: function() {
 		console.log('render', this.state);
 
@@ -166,12 +172,15 @@ var DynamicTable = {
 		var cellFor = function(item, idx, column, selected, edited) {
 			var value = item[column.name];
 			//console.log(item, idx, column, selected, edited);
+			console.log('widths: ', this.props.widths);
 
 			var tdStyle = {};
-			if(this.props.widths) {
-				tdStyle.width = this.props.widths[column.name];
+			if(this.widths) {
+				tdStyle.width = this.widths[column.name];
 				//console.log(tdStyle);
 			}
+
+
 
 			var inputStyle = {
 				//'height': '100%',
@@ -197,14 +206,12 @@ var DynamicTable = {
 				switch(column.type) {
 					case 'Number':
 
-						return (<td style={tdStyle}><Input 
+						return (<td style={tdStyle} ><Input 
 							standalone
 							type='number' 
 							style={inputStyle}
 							value={value} 
-							onChange={onInputChange} 
-							data-idx={idx} 
-							data-col={column.name} /></td>);
+							onChange={onInputChange} /></td>);
 
 					case 'Boolean':
 						return (<td style={tdStyle}><Input
@@ -212,9 +219,7 @@ var DynamicTable = {
 							type='checkbox'
 							style={{'margin': 0}}
 							checked={value}
-							onChange={onInputChange} 
-							data-idx={idx} 
-							data-col={column.name} />	</td>);
+							onChange={onInputChange} />	</td>);
 
 					case 'String':
 						if(inputType === 'select') {
@@ -223,9 +228,7 @@ var DynamicTable = {
 								type={'select'}
 								style={inputStyle}
 								value={value} 
-								onChange={onInputChange} 
-								data-idx={idx} 
-								data-col={column.name}>
+								onChange={onInputChange} >
 									{column.values.map(function(value) {
 										return (<option value={value}>{value}</option>);
 									})}
@@ -237,18 +240,14 @@ var DynamicTable = {
 								list={column.name + 'values'}
 								value={value} 
 								style={inputStyle}
-								onChange={onInputChange} 
-								data-idx={idx} 
-								data-col={column.name}></Input></td>);
+								onChange={onInputChange} ></Input></td>);
 						}
 						return (<td style={tdStyle}><Input 
 							standalone
 							type={inputType}
 							value={value} 
 							style={inputStyle}
-							onChange={onInputChange} 
-							data-idx={idx} 
-							data-col={column.name} /></td>);
+							onChange={onInputChange} /></td>);
 					default:
 						return (<td style={tdStyle}>{value}</td>);
 				
@@ -363,13 +362,14 @@ var DynamicTable = {
 		// get the column width to be use for the next render
 		// to avoid input messing up column widht
 		var ths = this.refs.headerRow.getDOMNode().children;
-		this.props.widths = {};
+		this.widths = {};
 		for(var i in ths) {
 			if(this.state.columns[i])
-				this.props.widths[this.state.columns[i].name] = ths[i].offsetWidth;
+				this.widths[this.state.columns[i].name] = ths[i].offsetWidth;
 			else
 				this[i] = '';
 		}
+		console.log(this.widths);
 		
 	},
 
@@ -508,6 +508,8 @@ var DynamicTable = {
 					this.state.data[idx] = item;
 				else
 					this.state.data.push(item);
+
+				console.log('abc');
 				this.setState({
 					data: this.state.data,
 					newItem: {},
