@@ -4,7 +4,7 @@
   "description": "A React table to show and edit data dyanmically.",
   "main": "dist/DynamicTable.js",
   "scripts": {
-    "build": "mkdir -p build && watchify -v -t babelify -o build/bundle.js src/main.js",
+    "build": "mkdir -p build && watchify -v -t babelify -o build/bundle.js src/main.js -p [ parcelify -wo build/bundle.css ]",
     "dist": "babel -d dist src && jsdoc -d doc/jsdoc dist",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -28,7 +28,9 @@
     "babelify": "^6.2.0",
     "browserify": "^11.0.1",
     "jsdoc": "^3.3.2",
+    "npm-css": "^0.2.3",
     "npm-run-all": "^1.2.6",
+    "parcelify": "^2.1.0",
     "react-tools": "^0.13.3",
     "reactify": "^1.1.1",
     "uglifyjs": "^2.4.10",
@@ -39,5 +41,6 @@
     "laxbreak": true,
     "eqnull": true,
     "esnext": true
-  }
+  },
+  "style": "*.css"
 }
