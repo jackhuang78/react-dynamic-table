@@ -49060,6 +49060,8 @@ var PageHeader = ReactBootstrap.PageHeader;
 var Panel = ReactBootstrap.Panel;
 var Input = ReactBootstrap.Input;
 var Alert = ReactBootstrap.Alert;
+var Row = ReactBootstrap.Row;
+var Col = ReactBootstrap.Col;
 var NotificationSystem = require('react-notification-system');
 var DynamicTable = require('./DynamicTable');
 var cookie = require('react-cookie');
@@ -49072,7 +49074,7 @@ var PrismCode = require('react-prism').PrismCode;
 
 //console.log(PrismCode);
 
-var exampleCode = "var DynamicTable = require('react-dynamic-table');  \nvar columns = require('columns.json');  \nvar data = require('data.json');  \nvar App = React.createClass({  \n \n\tcomponentDidMount: function() { \n\t\tthis.refs.table.setState({ \n\t\t\tcolumns: columns, \n\t\t\tdata: data \n\t\t}); \n\t}, \n \n\tload: function() { \n\t\tthis.refs.table.setData({ \n\t\t\tdata: data \n\t\t}); \n\t}, \n \n\tsave: function() { \n\t\tdata = this.refs.table.state.data; \n\t}, \n \n\trender: function() { \n\t\treturn ( \n\t\t\t<DynamicTable ref='table' \n\t\t\t\twillSelectItem={(idx, item, cb) => { console.log(`Will select item ${idx}`, item); cb(false);}} \n\t\t\t\tdidSelectItem={(idx, item) => { \n\t\t\t\t\tconsole.log(`Did select item ${idx}`, item); \n\t\t\t\t}} \n\t\t\t\twillRemoveItem={(idx, item, cb) => { \n\t\t\t\t\tconsole.log(`Will remove item ${idx}`, item); \n\t\t\t\t\tcb(false); \n\t\t\t\t}} \n\t\t\t\tdidRemoveItem={(idx, item) => { \n\t\t\t\t\tconsole.log(`Did remove item ${idx}; save data`, item); \n\t\t\t\t\tthis.save(); \n\t\t\t\t}} \n\t\t\t\twillStartCreatingItem={(item, cb) => { \n\t\t\t\t\tconsole.log(`Will start creating item`, item); \n\t\t\t\t\tcb(false, item); \n\t\t\t\t}} \n\t\t\t\tdidStartCreatingItem={(item) => { \n\t\t\t\t\tconsole.log(`Did start creating item`, item); \n\t\t\t\t}} \n\t\t\t\twillStartEditingItem={(idx, item, cb) => { \n\t\t\t\t\tconsole.log(`Will start editing item ${idx}`, item); \n\t\t\t\t\tcb(false, item); \n\t\t\t\t}} \n\t\t\t\tdidStartEditingItem={(idx, item) => { \n\t\t\t\t\tconsole.log(`Did start editing item ${idx}`, item); \n\t\t\t\t}} \n\t\t\t\twillFinishEditingItem={(idx, item, cb) => { \n\t\t\t\t\tconsole.log(`Will finish editing item ${idx}`, item); \n\t\t\t\t\tcb(false, item); \n\t\t\t\t}} \n\t\t\t\tdidFinishEditingItem={(idx, item) => { \n\t\t\t\t\tconsole.log(`Did finish editing item ${idx}; save data`, item); \n\t\t\t\t\tthis.save(); \n\t\t\t\t}} \n\t\t\t\twillCancelEditingItem={(idx, item, cb) => { \n\t\t\t\t\tconsole.log(`Will cancel editing item ${idx}`, item); \n\t\t\t\t\tcb(false, item); \n\t\t\t\t}} \n\t\t\t\tdidCancelEditingItem={(idx, item) => { \n\t\t\t\t\tconsole.log(`Did cancel editing item ${idx}`, item); \n\t\t\t\t}} \n\t\t\t\twillEditItem={(idx, item, col, value, cb) => { \n\t\t\t\t\tconsole.log(`Will edit item ${idx} ${col}=${value}`, item); \n\t\t\t\t\tcb(false, value); \n\t\t\t\t}} \n\t\t\t\tdidEditItem={(idx, item, col, value) => { \n\t\t\t\t\tconsole.log(`Did edit item ${idx} ${col}=${value}`, item); \n\t\t\t\t\tthis.save(); \n\t\t\t\t}} \n\t\t\t/> \n\t\t); \n\t} \n});".replace(/\t/g, '  ');
+var exampleCode = "var DynamicTable = require('react-dynamic-table');  \nvar columns = require('columns.json');  \nvar data = require('data.json');  \nvar App = React.createClass({  \n \n\tcomponentDidMount: function() { \n\t\tthis.refs.table.setState({ \n\t\t\tcolumns: columns, \n\t\t\tdata: data \n\t\t}); \n\t}, \n \n\tload: function() { \n\t\tthis.refs.table.setData({ \n\t\t\tdata: data \n\t\t}); \n\t}, \n \n\tsave: function() { \n\t\tdata = this.refs.table.state.data; \n\t}, \n \n\trender: function() { \n\t\treturn ( \n\t\t\t<DynamicTable ref='table' \n\n\t\t\t\twillSelectItem={(idx, item, cb) => { \n\t\t\t\t\tconsole.log(`Will select item ${idx}`, item); \n\t\t\t\t\tcb(false);\n\t\t\t\t}} \n\t\t\t\tdidSelectItem={(idx, item) => { \n\t\t\t\t\tconsole.log(`Did select item ${idx}`, item); \n\t\t\t\t}} \n\t\t\t\twillRemoveItem={(idx, item, cb) => { \n\t\t\t\t\tconsole.log(`Will remove item ${idx}`, item); \n\t\t\t\t\tcb(false); \n\t\t\t\t}} \n\t\t\t\tdidRemoveItem={(idx, item) => { \n\t\t\t\t\tconsole.log(`Did remove item ${idx}; save data`, item); \n\t\t\t\t\tthis.save(); \n\t\t\t\t}} \n\t\t\t\twillStartCreatingItem={(item, cb) => { \n\t\t\t\t\tconsole.log(`Will start creating item`, item); \n\t\t\t\t\tcb(false, item); \n\t\t\t\t}} \n\t\t\t\tdidStartCreatingItem={(item) => { \n\t\t\t\t\tconsole.log(`Did start creating item`, item); \n\t\t\t\t}} \n\t\t\t\twillStartEditingItem={(idx, item, cb) => { \n\t\t\t\t\tconsole.log(`Will start editing item ${idx}`, item); \n\t\t\t\t\tcb(false, item); \n\t\t\t\t}} \n\t\t\t\tdidStartEditingItem={(idx, item) => { \n\t\t\t\t\tconsole.log(`Did start editing item ${idx}`, item); \n\t\t\t\t}} \n\t\t\t\twillFinishEditingItem={(idx, item, cb) => { \n\t\t\t\t\tconsole.log(`Will finish editing item ${idx}`, item); \n\t\t\t\t\tcb(false, item); \n\t\t\t\t}} \n\t\t\t\tdidFinishEditingItem={(idx, item) => { \n\t\t\t\t\tconsole.log(`Did finish editing item ${idx}; save data`, item); \n\t\t\t\t\tthis.save(); \n\t\t\t\t}} \n\t\t\t\twillCancelEditingItem={(idx, item, cb) => { \n\t\t\t\t\tconsole.log(`Will cancel editing item ${idx}`, item); \n\t\t\t\t\tcb(false, item); \n\t\t\t\t}} \n\t\t\t\tdidCancelEditingItem={(idx, item) => { \n\t\t\t\t\tconsole.log(`Did cancel editing item ${idx}`, item); \n\t\t\t\t}} \n\t\t\t\twillEditItem={(idx, item, col, value, cb) => { \n\t\t\t\t\tconsole.log(`Will edit item ${idx} ${col}=${value}`, item); \n\t\t\t\t\tcb(false, value); \n\t\t\t\t}} \n\t\t\t\tdidEditItem={(idx, item, col, value) => { \n\t\t\t\t\tconsole.log(`Did edit item ${idx} ${col}=${value}`, item); \n\t\t\t\t\tthis.save(); \n\t\t\t\t}} \n\t\t\t/> \n\t\t); \n\t} \n});".replace(/\t/g, '  ');
 var exampleColumns = "[{\n\t\"name\": \"id\",\n\t\"type\": \"Number\",\n}, {\n\t\"name\": \"name\",\n\t\"type\": \"String\"\n}, {\n\t\"name\": \"dateOfBirth\",\n\t\"type\": \"String\",\n\t\"subtype\": \"date\"\n}, {\n\t\"name\": \"age\",\n\t\"type\": \"Number\"\n}, {\n\t\"name\": \"major\",\n\t\"type\": \"String\",\n\t\"subtype\": \"select\",\n\t\"values\": [\"economy\", \"computer science\", \"physics\"]\n}, {\n\t\"name\": \"country\",\n\t\"type\": \"String\",\n\t\"subtype\": \"datalist\",\n\t\"values\": [\"USA\", \"UK\", \"Taiwan\"]\n}, {\n\t\"name\": \"alive\",\n\t\"type\": \"Boolean\"\n}]".replace(/\t/g, '  ');
 var exampleData = "[{\n\t\"id\": 1,\n\t\"name\": \"Adam Smith\",\n\t\"dateOfBirth\": \"1723-06-16\",\n\t\"age\": 292,\n\t\"major\": \"economy\",\n\t\"alive\": false\n}, {\n\t\"id\": 2,\n\t\"name\": \"Bill Gates\",\n\t\"dateOfBirth\": \"1955-10-28\",\n\t\"age\": 60,\n\t\"major\": \"computer science\",\n\t\"alive\": true\n}]".replace(/\t/g, '  ');
 //var exampleCode = fs.readFileSync('public/example-code.java', 'utf8').replace(/\t/g, '  ');
@@ -49105,16 +49107,6 @@ var Demo = React.createClass({
 					Button,
 					{ bsStyle: 'danger', onClick: this.resetTable },
 					'Reset Table'
-				),
-				React.createElement(
-					'span',
-					null,
-					' '
-				),
-				React.createElement(
-					Button,
-					{ bsStyle: 'info', href: 'https://github.com/jhuang78/react-dynamic-table/blob/master/src/Demo.js?ts=2' },
-					'See Usage'
 				),
 				React.createElement(DynamicTable, { ref: 'table', onChange: this.save,
 					willSelectItem: function (idx, item, cb) {
@@ -49177,29 +49169,41 @@ var Demo = React.createClass({
 					'Usage'
 				),
 				React.createElement(
+					Row,
+					null,
+					React.createElement(
+						Col,
+						{ md: 6 },
+						React.createElement(
+							'h3',
+							null,
+							'columns.json'
+						),
+						React.createElement(
+							Highlight,
+							{ className: 'json' },
+							exampleColumns
+						)
+					),
+					React.createElement(
+						Col,
+						{ md: 6 },
+						React.createElement(
+							'h3',
+							null,
+							'data.json'
+						),
+						React.createElement(
+							Highlight,
+							{ className: 'json' },
+							exampleData
+						)
+					)
+				),
+				React.createElement(
 					'h3',
 					null,
-					'Column Definition'
-				),
-				React.createElement(
-					Highlight,
-					{ className: 'json' },
-					exampleColumns
-				),
-				React.createElement(
-					'h3',
-					null,
-					'Data'
-				),
-				React.createElement(
-					Highlight,
-					{ className: 'json' },
-					exampleData
-				),
-				React.createElement(
-					'h3',
-					null,
-					'Code'
+					'demo.js'
 				),
 				React.createElement(
 					Highlight,
