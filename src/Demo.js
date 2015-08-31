@@ -95,7 +95,6 @@ var Demo = React.createClass({
 					</Col>
 				</Row>
 				<Input ref='logs' type='textarea' label='' style={{height: 220}} value={this.state.logOn ? this.state.logs.join('\n') : ''} />
-
 			</div>
 		);
 	},
