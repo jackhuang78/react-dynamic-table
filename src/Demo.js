@@ -5,6 +5,8 @@ var PageHeader = ReactBootstrap.PageHeader;
 var Panel = ReactBootstrap.Panel;
 var Input = ReactBootstrap.Input;
 var Alert = ReactBootstrap.Alert;
+var Row = ReactBootstrap.Row;
+var Col = ReactBootstrap.Col;
 var NotificationSystem = require('react-notification-system');
 var DynamicTable = require('./DynamicTable');
 var cookie = require('react-cookie');
@@ -35,9 +37,6 @@ var Demo = React.createClass({
 					<PageHeader>DynamicTable Demo</PageHeader>
 					<h2>Demo</h2>
 					<Button bsStyle='danger' onClick={this.resetTable}>Reset Table</Button>
-					<span> </span>
-					<Button bsStyle='info' href='https://github.com/jhuang78/react-dynamic-table/blob/master/src/Demo.js?ts=2'>See Usage</Button>
-
 
 					<DynamicTable ref='table' onChange={this.save} 
 						willSelectItem={(idx, item, cb) => {
@@ -96,15 +95,21 @@ var Demo = React.createClass({
 					<Input ref='logs' type='textarea' label='' style={{height: 100}}value={this.state.logs} />
 
 					<h2>Usage</h2>
-					<h3>Column Definition</h3>
-					<Highlight className="json">
-						{exampleColumns}
-					</Highlight>
-					<h3>Data</h3>
-					<Highlight className="json">
-						{exampleData}
-					</Highlight>
-					<h3>Code</h3>
+					<Row>
+						<Col md={6}>
+							<h3>columns.json</h3>
+							<Highlight className="json">
+								{exampleColumns}
+							</Highlight>	
+						</Col>
+						<Col md={6}>
+							<h3>data.json</h3>
+							<Highlight className="json">
+								{exampleData}
+							</Highlight>
+						</Col>
+					</Row>
+					<h3>demo.js</h3>
 					<Highlight className="javascript">
 						{exampleCode}
 					</Highlight>

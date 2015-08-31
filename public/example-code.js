@@ -23,7 +23,11 @@ var App = React.createClass({
 	render: function() { 
 		return ( 
 			<DynamicTable ref='table' 
-				willSelectItem={(idx, item, cb) => { console.log(`Will select item ${idx}`, item); cb(false);}} 
+
+				willSelectItem={(idx, item, cb) => { 
+					console.log(`Will select item ${idx}`, item); 
+					cb(false);
+				}} 
 				didSelectItem={(idx, item) => { 
 					console.log(`Did select item ${idx}`, item); 
 				}} 
