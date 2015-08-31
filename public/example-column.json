@@ -1,0 +1,27 @@
+[{
+	"name": "id",
+	"type": "Number",
+}, {
+	"name": "name",
+	"type": "String"
+}, {
+	"name": "dateOfBirth",
+	"type": "String",
+	"subtype": "date"
+}, {
+	"name": "age",
+	"type": "Number"
+}, {
+	"name": "major",
+	"type": "String",
+	"subtype": "select",
+	"values": ["economy", "computer science", "physics"]
+}, {
+	"name": "country",
+	"type": "String",
+	"subtype": "datalist",
+	"values": ["USA", "UK", "Taiwan"]
+}, {
+	"name": "alive",
+	"type": "Boolean"
+}]

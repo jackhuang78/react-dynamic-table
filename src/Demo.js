@@ -11,12 +11,16 @@ var cookie = require('react-cookie');
 var util = require('util');
 var moment = require('moment');
 var sampleData = require('../public/demoData.json');
-//var Highlight = require('react-highlight');
+var Highlight = require('react-highlight');
 
 var PrismCode = require('react-prism').PrismCode;
 
-console.log(PrismCode);
-
+//console.log(PrismCode);
+var fs = require('fs');
+var exampleCode = fs.readFileSync('public/example-code.js', 'utf8').replace(/\t/g, '  ');
+var exampleColumns = fs.readFileSync('public/example-column.json', 'utf8').replace(/\t/g, '  ');
+var exampleData = fs.readFileSync('public/example-data.json', 'utf8').replace(/\t/g, '  ');
+//var exampleCode = fs.readFileSync('public/example-code.java', 'utf8').replace(/\t/g, '  ');
 //var exampleCode = require('../public/example-code.js');
 
 
@@ -29,6 +33,7 @@ var Demo = React.createClass({
 				<NotificationSystem ref="notificationSystem" />
 				<Panel style={{margin: 30}}>
 					<PageHeader>DynamicTable Demo</PageHeader>
+					<h2>Demo</h2>
 					<Button bsStyle='danger' onClick={this.resetTable}>Reset Table</Button>
 					<span> </span>
 					<Button bsStyle='info' href='https://github.com/jhuang78/react-dynamic-table/blob/master/src/Demo.js?ts=2'>See Usage</Button>
@@ -88,10 +93,23 @@ var Demo = React.createClass({
 							//this.save(this.refs.table.state);
 						}}
 					/>
+					<Input ref='logs' type='textarea' label='' style={{height: 100}}value={this.state.logs} />
 
-
-					<Input ref='logs' type='textarea' label='Logs' style={{height: 100}}value={this.state.logs} />
+					<h2>Usage</h2>
+					<h3>Column Definition</h3>
+					<Highlight className="json">
+						{exampleColumns}
+					</Highlight>
+					<h3>Data</h3>
+					<Highlight className="json">
+						{exampleData}
+					</Highlight>
+					<h3>Code</h3>
+					<Highlight className="javascript">
+						{exampleCode}
+					</Highlight>
 				</Panel>
+				
 				
 			</div>
 		);

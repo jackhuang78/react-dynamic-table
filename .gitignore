@@ -2,3 +2,5 @@ node_modules
 build
 doc
 *.module-cache
+gh-pages
+*.log
