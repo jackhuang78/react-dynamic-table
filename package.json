@@ -25,6 +25,7 @@
     "react-highlight": "^0.5.0",
     "react-notification-system": "^0.1.14",
     "react-prism": "^1.4.1",
+    "react-router": "^0.13.3",
     "util": "^0.10.3",
     "uuid": "^2.0.1"
   },

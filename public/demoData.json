@@ -33,13 +33,15 @@
 		"dateOfBirth": "1723-06-16",
 		"age": 292,
 		"major": "economy",
-		"alive": false
+		"alive": false,
+		"country": "UK"
 	}, {
 		"id": 2,
 		"name": "Bill Gates",
 		"dateOfBirth": "1955-10-28",
 		"age": 60,
 		"major": "computer science",
-		"alive": true
+		"alive": true,
+		"country": "USA"
 	}]
 }

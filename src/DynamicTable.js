@@ -145,7 +145,7 @@ var DynamicTable = {
 	},
 
 	render: function() {
-		console.log('render', this.state);
+		//console.log('render', this.state);
 
 		if(!this.state) {
 			return (<div>No Data</div>);
@@ -172,7 +172,7 @@ var DynamicTable = {
 		var cellFor = function(item, idx, column, selected, edited) {
 			var value = item[column.name];
 			//console.log(item, idx, column, selected, edited);
-			console.log('widths: ', this.props.widths);
+			//console.log('widths: ', this.props.widths);
 
 			var tdStyle = {};
 			if(this.widths) {
@@ -369,7 +369,7 @@ var DynamicTable = {
 			else
 				this[i] = '';
 		}
-		console.log(this.widths);
+		//console.log(this.widths);
 		
 	},
 
@@ -509,7 +509,7 @@ var DynamicTable = {
 				else
 					this.state.data.push(item);
 
-				console.log('abc');
+				//console.log('abc');
 				this.setState({
 					data: this.state.data,
 					newItem: {},
@@ -560,11 +560,12 @@ var DynamicTable = {
 			? this.copyItem(this.state.data[idx])
 			: this.copyItem(this.state.newItem);
 
-		var value = (event.target.type === 'checked')
+		console.log(event.target.type, event.target.checked);
+
+		var value = (event.target.type === 'checkbox')
 			? event.target.checked
 			: event.target.value;
 
-		
 		this.props.willEditItem(idx, item, col, value,
 			/**
 			 * @callback DynamicTable#willEditItemCallback
@@ -596,5 +597,7 @@ var DynamicTable = {
 };
 
 DynamicTable = React.createClass(DynamicTable);
+
+
 
 module.exports = DynamicTable;

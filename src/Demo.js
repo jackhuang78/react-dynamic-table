@@ -22,8 +22,7 @@ var fs = require('fs');
 var exampleCode = fs.readFileSync('public/example-code.js', 'utf8').replace(/\t/g, '  ');
 var exampleColumns = fs.readFileSync('public/example-column.json', 'utf8').replace(/\t/g, '  ');
 var exampleData = fs.readFileSync('public/example-data.json', 'utf8').replace(/\t/g, '  ');
-//var exampleCode = fs.readFileSync('public/example-code.java', 'utf8').replace(/\t/g, '  ');
-//var exampleCode = require('../public/example-code.js');
+
 
 
 var Demo = React.createClass({
@@ -32,97 +31,78 @@ var Demo = React.createClass({
 	render: function() {
 		return (
 			<div>
-				<NotificationSystem ref="notificationSystem" />
-				<Panel style={{margin: 30}}>
-					<PageHeader>DynamicTable Demo</PageHeader>
-					<h2>Demo</h2>
-					<Button bsStyle='danger' onClick={this.resetTable}>Reset Table</Button>
+				<DynamicTable ref='table' onChange={this.save} 
+					willSelectItem={(idx, item, cb) => {
+						this.appendLog(`Will select item ${idx}`, item);
+						cb(false); 
+					}}
+					didSelectItem={(idx, item) => {
+						this.appendLog(`Did select item ${idx}`, item);
+					}}
+					willRemoveItem={(idx, item, cb) => {
+						this.appendLog(`Will remove item ${idx}`, item);
+						cb(false);
+					}}
+					didRemoveItem={(idx, item) => {
+						this.appendLog(`Did remove item ${idx}; save data`, item);
+						this.save(this.refs.table.state);
+					}}
+					willStartCreatingItem={(item, cb) => {
+						this.appendLog(`Will start creating item`, item);
+						cb(false, item);
+					}}
+					didStartCreatingItem={(item) => {
+						this.appendLog(`Did start creating item`, item);
+					}}
+					willStartEditingItem={(idx, item, cb) => {
+						this.appendLog(`Will start editing item ${idx}`, item);
+						cb(false, item);
+					}}
+					didStartEditingItem={(idx, item) => {
+						this.appendLog(`Did start editing item ${idx}`, item);
+					}}
+					willFinishEditingItem={(idx, item, cb) => {
+						this.appendLog(`Will finish editing item ${idx}`, item);
+						cb(false, item);
+					}}
+					didFinishEditingItem={(idx, item) => {
+						this.appendLog(`Did finish editing item ${idx}; save data`, item);
+						this.save(this.refs.table.state);
+					}}
+					willCancelEditingItem={(idx, item, cb) => {
+						this.appendLog(`Will cancel editing item ${idx}`, item);
+						cb(false, item);
+					}}
+					didCancelEditingItem={(idx, item) => {
+						this.appendLog(`Did cancel editing item ${idx}`, item);
+					}}
+					willEditItem={(idx, item, col, value, cb) => {
+						this.appendLog(`Will edit item ${idx} ${col}=${value}`, item);
+						cb(false, value);
+					}}
+					didEditItem={(idx, item, col, value) => {
+						this.appendLog(`Did edit item ${idx} ${col}=${value}`, item);
+						//this.save(this.refs.table.state);
+					}}
+				/>
+				<Row>
+					<Col md={2}>
+						<Input ref='logOn' type='checkbox' label='Show callbacks' onChange={(e)=>this.setState({logOn: e.target.checked})}/>
+					</Col>
+					<Col md={8} />
+					<Col md={1}>
+						<Button bsStyle='danger' onClick={this.resetTable}>Reset Table</Button>
+					</Col>
+				</Row>
+				<Input ref='logs' type='textarea' label='' style={{height: 220}} value={this.state.logOn ? this.state.logs.join('\n') : ''} />
 
-					<DynamicTable ref='table' onChange={this.save} 
-						willSelectItem={(idx, item, cb) => {
-							this.appendLog(`Will select item ${idx}`, item);
-							cb(false); 
-						}}
-						didSelectItem={(idx, item) => {
-							this.appendLog(`Did select item ${idx}`, item);
-						}}
-						willRemoveItem={(idx, item, cb) => {
-							this.appendLog(`Will remove item ${idx}`, item);
-							cb(false);
-						}}
-						didRemoveItem={(idx, item) => {
-							this.appendLog(`Did remove item ${idx}; save data`, item);
-							this.save(this.refs.table.state);
-						}}
-						willStartCreatingItem={(item, cb) => {
-							this.appendLog(`Will start creating item`, item);
-							cb(false, item);
-						}}
-						didStartCreatingItem={(item) => {
-							this.appendLog(`Did start creating item`, item);
-						}}
-						willStartEditingItem={(idx, item, cb) => {
-							this.appendLog(`Will start editing item ${idx}`, item);
-							cb(false, item);
-						}}
-						didStartEditingItem={(idx, item) => {
-							this.appendLog(`Did start editing item ${idx}`, item);
-						}}
-						willFinishEditingItem={(idx, item, cb) => {
-							this.appendLog(`Will finish editing item ${idx}`, item);
-							cb(false, item);
-						}}
-						didFinishEditingItem={(idx, item) => {
-							this.appendLog(`Did finish editing item ${idx}; save data`, item);
-							this.save(this.refs.table.state);
-						}}
-						willCancelEditingItem={(idx, item, cb) => {
-							this.appendLog(`Will cancel editing item ${idx}`, item);
-							cb(false, item);
-						}}
-						didCancelEditingItem={(idx, item) => {
-							this.appendLog(`Did cancel editing item ${idx}`, item);
-						}}
-						willEditItem={(idx, item, col, value, cb) => {
-							this.appendLog(`Will edit item ${idx} ${col}=${value}`, item);
-							cb(false, value);
-						}}
-						didEditItem={(idx, item, col, value) => {
-							this.appendLog(`Did edit item ${idx} ${col}=${value}`, item);
-							//this.save(this.refs.table.state);
-						}}
-					/>
-					<Input ref='logs' type='textarea' label='' style={{height: 100}}value={this.state.logs} />
-
-					<h2>Usage</h2>
-					<Row>
-						<Col md={6}>
-							<h3>columns.json</h3>
-							<Highlight className="json">
-								{exampleColumns}
-							</Highlight>	
-						</Col>
-						<Col md={6}>
-							<h3>data.json</h3>
-							<Highlight className="json">
-								{exampleData}
-							</Highlight>
-						</Col>
-					</Row>
-					<h3>demo.js</h3>
-					<Highlight className="javascript">
-						{exampleCode}
-					</Highlight>
-				</Panel>
-				
-				
 			</div>
 		);
 	},
 
 	getInitialState: function() {
 		return {
-			logs: 'Initialize table.'
+			logs: ['Initialize table.']
 		};
 	},
 
@@ -133,9 +113,13 @@ var Demo = React.createClass({
 
 	appendLog: function(s, item) {
 		s = util.format('%s: %s %j', moment().format('YYYY/MM/DD HH:mm:ss.SSS'), s, item);
-		this.setState({
-			logs: this.state.logs + '\n' + s
-		});
+		if(this.state.logs.length >= 10)
+			this.state.logs.splice(0,1);
+		this.state.logs.push(s);
+		if(this.state.logOn)
+			this.setState({
+				logs: this.state.logs
+			});
 	},
 
 	showMessage: function(level, message, meta) {

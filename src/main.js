@@ -1,5 +1,15 @@
 var React = require('react');
-var Demo = require('./Demo');
+var Router = require('react-router');
+//var Demo = require('./Demo');
+var Component = require('./App');
 
-React.render(<Demo/>, content);
+
+if(Component.isRouter) {
+	Router.run(Component.routes, function (Handler) {
+  	React.render(<Handler/>, document.body);
+  });
+} else {
+	React.render(<Component/>, document.body);
+}
+
 
